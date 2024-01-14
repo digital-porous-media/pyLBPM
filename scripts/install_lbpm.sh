@@ -86,7 +86,8 @@ echo "# HDF5 VERSION: $HDF5_VERSION" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_CONFIG_DIR=$HOME/.pyLBPM" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_GIT_REPO=https://github.com/OPM/LBPM.git" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_GIT_COMMIT=$LBPM_GIT_COMMIT" >> $LBPM_CONFIG_DIR/config.sh
-echo "export SOURCE_DIR=$SRCDIR" >> $LBPM_CONFIG_DIR/config.sh
+echo "export SOURCE_DIR=$SOURCE_DIR" >> $LBPM_CONFIG_DIR/config.sh
+echo "export LBPM_SOURCE_DIR=$LBPM_SOURCE_DIR" >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPI_DIR=$MPI_DIR"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_BIN=$LBPM_INSTALL_DIR/bin" >> $LBPM_CONFIG_DIR/config.sh
 if [[ -f $NVCC ]]; then
