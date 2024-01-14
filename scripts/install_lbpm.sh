@@ -39,7 +39,7 @@ mkdir -p $LBPM_INSTALL_DIR
 cd $LBPM_INSTALL_DIR
 echo "Installing LBPM to $LBPM_INSTALL_DIR"
 
-if [[ mode == "nvidia" ]]; then
+if [[ $mode == "nvidia" ]]; then
     echo "Building for $mode mode. Path to cuda compiler is $NVCC"
     export CUDA_HOST_COMPILER=`which gcc`
     rm -rf CMake*
