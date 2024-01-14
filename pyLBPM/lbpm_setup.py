@@ -7,6 +7,7 @@ from pathlib import Path
 def get_config():
 
     config_file=Path('~/.pyLBPM/config.yml')
+    environment_file=Path('~/.pyLBPM/config.sh')
     config = None
     if config_file.is_file() :        
         with open(config_file, 'r') as file:
@@ -30,29 +31,31 @@ def initialize():
         
     return config
 
-def install_openmpi(install_path):
-    success=false
+def install_dependencies(install_path):
+    success=False
         # check the operating system
     if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":
-        # linux        
-        #for the cuda version
-        use_cuda=subprocess.check_output(['which','nvcc'])
-        if (use_cuda):
-            print("GPU detected: compling GPU enabled version of openmpi")
-        else :
-            print("No GPU detected: compiling CPU version of openmpi")
-
-        success=subprocess.run(["bash scripts/install_lbpm.sh","install_path"])
+        # linux
+        download_dependencies(install_path)
+        success=subprocess.run(["bash", "scripts/install_lbpm_dependencies.sh","install_path", "--install"])
 
     else :
         print("Your platform is "+str(platform),": only linux installation is supported.")
-        success=false
+        success=False
 
     return success
 
+def download_dependencies(install_path):
+    success=False
+        # check the operating system
+    if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":
+        # linux        
+        success=subprocess.run(["bash", "scripts/install_lbpm_dependencies.sh","install_path", "--download"])
 
-def install_hdf5(install_path):
-    success=True
+    else :
+        print("Your platform is "+str(platform),": only linux installation is supported.")
+        success=False
+
     return success
 
 
@@ -62,11 +65,11 @@ def install_lbpm(install_path):
     if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":
         # linux
 
-        success=subprocess.run(["bash", "scripts/install_lbpm.sh", "install_path"])
+        success=subprocess.run(["bash", "scripts/install_lbpm.sh"])
 
     else :
         print("Your platform is "+str(platform.system()),": only linux installation is supported.")
-        success=false
+        success=False
 
     #success=True
     return success
