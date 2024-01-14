@@ -40,7 +40,7 @@ cd $LBPM_INSTALL_DIR
 echo "Installing LBPM to $LBPM_INSTALL_DIR"
 
 if [[ mode == "nvidia" ]]; then
-    echo "Building for $mode GPU. Path to cuda compiler is $NVCC"
+    echo "Building for $mode mode. Path to cuda compiler is $NVCC"
     export CUDA_HOST_COMPILER=`which gcc`
     rm -rf CMake*
     cmake                                    \
@@ -61,6 +61,7 @@ if [[ mode == "nvidia" ]]; then
 	 $LBPM_SOURCE_DIR
   
 else
+    echo "Building for $mode mode. "
     rm -rf CMake*
     cmake                                    \
 	-D CMAKE_C_COMPILER:PATH=$MPICC          \
