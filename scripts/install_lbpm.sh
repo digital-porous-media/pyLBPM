@@ -81,6 +81,8 @@ make -j  && make install
 
 mkdir -p ${LBPM_CONFIG_DIR}
 echo '#!/bin/bash' > $LBPM_CONFIG_DIR/config.sh
+echo "# MPI VERSION: $MPI_VERSION" >> $LBPM_CONFIG_DIR/config.sh
+echo "# HDF5 VERSION: $HDF5_VERSION" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_CONFIG_DIR=$HOME/.pyLBPM" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_GIT_REPO=https://github.com/OPM/LBPM.git" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_GIT_COMMIT=$LBPM_GIT_COMMIT" >> $LBPM_CONFIG_DIR/config.sh

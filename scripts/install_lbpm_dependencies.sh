@@ -156,7 +156,7 @@ export MPICC=`which mpicc`
 export OMPI_INFO=`which ompi_info`
 export OMPI_VERSION=$($OMPI_INFO --version | head -1 )
 
-if [[ ${OMPI_VERSION} == "Open MPI v4.1.6" ]]; then
+if [[ ${OMPI_VERSION} == "Open MPI v$MPI_VERSION" ]]; then
     export MPI_DIR=$(echo $OMPI_INFO | sed 's|/bin/ompi_info||g')
     export BUILD_MPI=false
     echo "Located existing Open MPI. Trying the version installed at $MPI_DIR"
@@ -169,7 +169,7 @@ fi
 if [[ ${BUILD_MPI} == true ]]; then
    echo "Install MPI to $MPI_DIR"
    tar -xzvf $MPISRC
-   cd openmpi-4.1.6
+   cd openmpi-$MPI_VERSION
 
    if [[ -f "${CUDADIR}/bin/nvcc" ]]; then
        echo "Building openmpi with cuda support"
@@ -232,8 +232,8 @@ fi
 export LBPM_CONFIG_DIR=$HOME/.pyLBPM
 mkdir -p ${LBPM_CONFIG_DIR}
 echo '#!/bin/bash' > $LBPM_CONFIG_DIR/config.sh
-echo "MPI VERSION: $MPI_VERSION" >> $LBPM_CONFIG_DIR/config.sh
-echo "HDF5 VERSION: $HDF5_VERSION" >> $LBPM_CONFIG_DIR/config.sh
+echo "# MPI VERSION: $MPI_VERSION" >> $LBPM_CONFIG_DIR/config.sh
+echo "# HDF5 VERSION: $HDF5_VERSION" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_CONFIG_DIR=$HOME/.pyLBPM" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_GIT_REPO=https://github.com/OPM/LBPM.git" >> $LBPM_CONFIG_DIR/config.sh
 echo "export SOURCE_DIR=$SRCDIR" >> $LBPM_CONFIG_DIR/config.sh
