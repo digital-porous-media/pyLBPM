@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export MPI_VERSION="3.1.2"
+export HDF5_VERSION="1.14.3"
+
 # by default don't do these things
 INSTALL=NO
 DOWNLOAD=NO
@@ -48,14 +51,18 @@ echo "Sources path: " $SRCDIR
 mkdir -p $SRCDIR
 cd $SRCDIR
 
-export MPISRC="openmpi-4.1.6.tar.gz"
+#export MPISRC="openmpi-4.1.6.tar.gz"
+export MPISRC="openmpi-$MPI_VERSION.tar.gz"
 if [ -f "$MPISRC" ]; then
     echo "$MPISRC already downloaded"
 else
     if [[ $DOWNLOAD == YES ]]; then 
-       echo "$MPISRC not present, downloading files..."
-       wget https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.6.tar.gz
-       echo "       ...done"
+	echo "$MPISRC not present, downloading files..."
+	MPI_LINK="https://download.open-mpi.org/release/open-mpi/v3.1/openmpi-$MPI_VERSION.tar.gz"
+	echo "$MPISRC not present, downloading files from $MPI_LINK..."
+        wget $MPI_LINK
+	#wget https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.6.tar.gz
+	echo "       ...done"
     else
 	echo "$MPISRC is not found! exiting"
 	exit;
@@ -104,8 +111,8 @@ fi
 
 ls $SRCDIR
 
-export MPI_DIR=$DESTDIR/openmpi/4.1.6
-export LBPM_HDF5_DIR=$DESTDIR/hdf5/1.14.3
+export MPI_DIR=$DESTDIR/openmpi/$MPI_VERSION
+export LBPM_HDF5_DIR=$DESTDIR/hdf5/$HDF5_VERSION
 export PATH=$MPI_DIR/bin:$PATH
 export LD_LIBRARY_PATH=$MPI_DIR/lib:$LBPM_HDF5_DIR/lib:$LD_LIBRARY_PATH
 export LBPM_ZLIB_DIR=$DESTDIR/zlib/1.3
@@ -225,6 +232,8 @@ fi
 export LBPM_CONFIG_DIR=$HOME/.pyLBPM
 mkdir -p ${LBPM_CONFIG_DIR}
 echo '#!/bin/bash' > $LBPM_CONFIG_DIR/config.sh
+echo "MPI VERSION: $MPI_VERSION" >> $LBPM_CONFIG_DIR/config.sh
+echo "HDF5 VERSION: $HDF5_VERSION" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_CONFIG_DIR=$HOME/.pyLBPM" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_GIT_REPO=https://github.com/OPM/LBPM.git" >> $LBPM_CONFIG_DIR/config.sh
 echo "export SOURCE_DIR=$SRCDIR" >> $LBPM_CONFIG_DIR/config.sh
@@ -243,3 +252,4 @@ echo "export LD_LIBRARY_PATH=$MPI_DIR/lib:$LBPM_HDF5_DIR/lib:$LD_LIBRARY_PATH" >
 echo "export PATH=$MPI_DIR/bin:$PATH" >> $LBPM_CONFIG_DIR/config.sh
 
 exit;
+
