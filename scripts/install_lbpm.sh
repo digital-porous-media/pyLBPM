@@ -79,7 +79,7 @@ else
 	 $LBPM_SOURCE_DIR
 fi
 
-make -j  && make install
+make -j  VERBOSE=1 && make install
 
 mkdir -p ${LBPM_CONFIG_DIR}
 echo '#!/bin/bash' > $LBPM_CONFIG_DIR/config.sh
