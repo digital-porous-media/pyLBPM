@@ -101,9 +101,9 @@ echo "export LBPM_SOURCE_DIR=$LBPM_SOURCE_DIR" >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPICC=$MPI_DIR/bin/mpicc"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPICXX=$MPI_DIR/bin/mpicxx"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPI_DIR=$MPI_DIR"  >> $LBPM_CONFIG_DIR/config.sh
-echo "export MPIRUN=$MPI_DIR/bin/mpirun $MPIARGS"  >> $LBPM_CONFIG_DIR/config.sh
+echo "export MPIRUN='"'$MPI_DIR/bin/mpirun $MPIARGS'"'"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_BIN=$LBPM_INSTALL_DIR/bin" >> $LBPM_CONFIG_DIR/config.sh
-echo "export LBPM_MPIARGS=$MPIARGS" >> $LBPM_CONFIG_DIR/config.sh
+echo "export LBPM_MPIARGS='"'$MPIARGS'"'" >> $LBPM_CONFIG_DIR/config.sh
 if [[ -f $NVCC ]]; then
     echo 'export mode="nvidia"' >> $LBPM_CONFIG_DIR/config.sh
     echo "export NVCC=$NVCC" >> $LBPM_CONFIG_DIR/config.sh
