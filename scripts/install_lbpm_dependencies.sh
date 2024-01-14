@@ -69,18 +69,18 @@ else
     fi
 fi
 
-export ZLIBSRC=zlib-1.3.tar.gz
-if [ -f "$ZLIBSRC" ]; then
-    echo "$ZLIBSRC code already downloaded"
-else
-    if [[ $DOWNLOAD == YES ]]; then 
-    echo "$ZLIBSRC not present, downloading files..."
-    wget https://www.zlib.net/zlib-1.3.tar.gz
-    else
-	echo "$ZLIBSRC is not found! exiting"
-	exit;
-    fi
-fi
+#export ZLIBSRC=zlib-1.3.tar.gz
+#if [ -f "$ZLIBSRC" ]; then
+#    echo "$ZLIBSRC code already downloaded"
+#else
+#    if [[ $DOWNLOAD == YES ]]; then 
+#    echo "$ZLIBSRC not present, downloading files..."
+#    wget https://www.zlib.net/zlib-1.3.tar.gz
+#    else#
+#	echo "$ZLIBSRC is not found! exiting"
+#	exit;
+#    fi
+#fi
 
 export SZIPSRC=szip-2.1.1.tar.gz
 if [ -f "$SZIPSRC" ]; then
@@ -223,17 +223,18 @@ if [[ ${BUILD_HDF5} == true ]]; then
 
    tar -xzvf $HDFSRC
    cd hdf5-1.14.3
-   CC=$MPI_DIR/bin/mpicc CXX=$MPI_DIR/bin/mpicxx CXXFLAGS="-fPIC -O3 -std=c++14" ./configure --prefix=$LBPM_HDF5_DIR --enable-parallel --enable-shared --with-zlib=$LBPM_ZLIB_DIR --with-szip=$LBPM_SZIP_DIR
+   CC=$MPI_DIR/bin/mpicc CXX=$MPI_DIR/bin/mpicxx CXXFLAGS="-fPIC -O3 -std=c++14" ./configure --prefix=$LBPM_HDF5_DIR --enable-parallel --enable-shared --with-szip=$LBPM_SZIP_DIR
    make -j8 && make install
-  cd $SRCIR
+   cd $SRCIR
+   #--with-zlib=$LBPM_ZLIB_DIR 
 fi
 
 #######################################
 export LBPM_CONFIG_DIR=$HOME/.pyLBPM
 mkdir -p ${LBPM_CONFIG_DIR}
 echo '#!/bin/bash' > $LBPM_CONFIG_DIR/config.sh
-echo "# MPI VERSION: $MPI_VERSION" >> $LBPM_CONFIG_DIR/config.sh
-echo "# HDF5 VERSION: $HDF5_VERSION" >> $LBPM_CONFIG_DIR/config.sh
+echo "export MPI_VERSION=$MPI_VERSION" >> $LBPM_CONFIG_DIR/config.sh
+echo "export HDF5_VERSION=$HDF5_VERSION" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_CONFIG_DIR=$HOME/.pyLBPM" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_GIT_REPO=https://github.com/OPM/LBPM.git" >> $LBPM_CONFIG_DIR/config.sh
 echo "export SOURCE_DIR=$SRCDIR" >> $LBPM_CONFIG_DIR/config.sh
