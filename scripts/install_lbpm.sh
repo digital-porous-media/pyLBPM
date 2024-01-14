@@ -41,6 +41,13 @@ echo "Installing LBPM to $LBPM_INSTALL_DIR"
 
 if [[ $mode == "nvidia" ]]; then
     echo "Building for $mode mode. Path to cuda compiler is $NVCC"
+
+    export MPIARGS="--bind-to core --mca pml ob1 --mca btl vader,self,smcuda,openib  \
+         --mca btl_openib_warn_default_gid_prefix 0  \
+         --mca btl_smcuda_use_cuda_ipc_same_gpu 0  --mca btl_openib_want_cuda_gdr 0  \
+         --mca btl_openib_cuda_async_recv false --mca btl_smcuda_use_cuda_ipc 0 \
+         --mca btl_openib_allow_ib true --mca btl_openib_cuda_rdma_limit 1000 -x LD_LIBRARY_PATH"
+
     export CUDA_HOST_COMPILER=`which gcc`
     rm -rf CMake*
     cmake                                    \
@@ -61,6 +68,7 @@ if [[ $mode == "nvidia" ]]; then
 	 $LBPM_SOURCE_DIR
   
 else
+    export MPIARGS="--bind-to core"
     echo "Building for $mode mode. "
     rm -rf CMake*
     cmake                                    \
@@ -90,16 +98,18 @@ echo "export LBPM_GIT_REPO=https://github.com/OPM/LBPM.git" >> $LBPM_CONFIG_DIR/
 echo "export LBPM_GIT_COMMIT=$LBPM_GIT_COMMIT" >> $LBPM_CONFIG_DIR/config.sh
 echo "export SOURCE_DIR=$SOURCE_DIR" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_SOURCE_DIR=$LBPM_SOURCE_DIR" >> $LBPM_CONFIG_DIR/config.sh
+echo "export MPICC=$MPI_DIR/bin/mpicc"  >> $LBPM_CONFIG_DIR/config.sh
+echo "export MPICXX=$MPI_DIR/bin/mpicxx"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPI_DIR=$MPI_DIR"  >> $LBPM_CONFIG_DIR/config.sh
+echo "export MPIRUN=$MPI_DIR/bin/mpirun $MPIARGS"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_BIN=$LBPM_INSTALL_DIR/bin" >> $LBPM_CONFIG_DIR/config.sh
+echo "export LBPM_MPIARGS=$MPIARGS" >> $LBPM_CONFIG_DIR/config.sh
 if [[ -f $NVCC ]]; then
     echo 'export mode="nvidia"' >> $LBPM_CONFIG_DIR/config.sh
     echo "export NVCC=$NVCC" >> $LBPM_CONFIG_DIR/config.sh
 else
     echo 'export mode="cpu"' >> $LBPM_CONFIG_DIR/config.sh
 fi
-echo "export MPICC=$MPI_DIR/bin/mpicc"  >> $LBPM_CONFIG_DIR/config.sh
-echo "export MPICXX=$MPI_DIR/bin/mpicxx"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPI_DIR=$MPI_DIR"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_HDF5_DIR=$LBPM_HDF5_DIR"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export LD_LIBRARY_PATH=$MPI_DIR/lib:$LBPM_HDF5_DIR/lib:$LD_LIBRARY_PATH" >> $LBPM_CONFIG_DIR/config.sh
