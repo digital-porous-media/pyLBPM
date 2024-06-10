@@ -3,6 +3,12 @@ import numpy as np
 import urllib.request
 from pyLBPM import lbpm_input_database
 
+
+print(os.environ['LBPM_BIN'])
+print(os.environ['MPI_DIR'])
+print(os.environ['LBPM_MPIARGS'])
+print(os.environ['LBPM_GIT_COMMIT'])
+
 # Set up the simulation directory
 SimulationDir = "/work/02453/mcclurej/ls6/DRP24/Example"
 os.chdir(SimulationDir)
@@ -32,3 +38,4 @@ domain.decomp(2,2,1)
 colorSim = lbpm_input_database.color_db(domain)
 colorSim.set_protocol('fractional flow')
 colorSim.show_config_file()
+
