@@ -1,12 +1,12 @@
 import os
 import numpy as np
 import urllib.request
-from pyLBPM import lbpm_input_database
+from pyLBPM import lbpm_domain
+from pyLBPM import lbpm_color_model
 
-
-print(os.environ['LBPM_BIN'])
-print(os.environ['MPI_DIR'])
-print(os.environ['LBPM_MPIARGS'])
+#print(os.environ['LBPM_BIN'])
+#print(os.environ['MPI_DIR'])
+#print(os.environ['LBPM_MPIARGS'])
 print(os.environ['LBPM_GIT_COMMIT'])
 
 # Set up the simulation directory
@@ -26,7 +26,7 @@ ID = np.fromfile(input_file,dtype = np.uint8)
 ID.shape = (Nz,Ny,Nx)
 
 # Initialize simulation domain from numpy array
-domain = lbpm_input_database.domain_db("lrc32",ID)
+domain = lbpm_domain.domain_db("lrc32",ID)
 
 # run domain decomposition
 domain.decomp(2,2,1)
@@ -35,7 +35,8 @@ domain.decomp(2,2,1)
 #z_slice=100
 #dm.view(z_slice)
 
-colorSim = lbpm_input_database.color_db(domain)
+colorSim = lbpm_color_model.color_db(domain)
 colorSim.set_protocol('fractional flow')
 colorSim.show_config_file()
+
 
