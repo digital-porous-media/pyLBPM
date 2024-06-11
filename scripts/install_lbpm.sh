@@ -21,7 +21,6 @@ echo "       LBPM_HDF5_DIR: $LBPM_HDF5_DIR"
 echo "       LBPM_INSTALL_ROOT_DIR: $LBPM_INSTALL_ROOT_DIR"
 echo "       SOURCE_DIR: $SOURCE_DIR"
 
-
 cd $SOURCE_DIR
 if [[ -d $LBPM_SOURCE_DIR ]]; then
     echo "LBPM source code at $LBPM_SOURCE_DIR"
@@ -33,7 +32,6 @@ else
 fi
 export LBPM_GIT_COMMIT=$(git log -1 | head -1 | awk '{print $2}')
 cd $SOURCE_DIR
-
 
 mkdir -p $LBPM_INSTALL_DIR
 cd $LBPM_INSTALL_DIR
@@ -100,9 +98,9 @@ echo "export SOURCE_DIR=$SOURCE_DIR" >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_SOURCE_DIR=$LBPM_SOURCE_DIR" >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPICC=$MPI_DIR/bin/mpicc"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPICXX=$MPI_DIR/bin/mpicxx"  >> $LBPM_CONFIG_DIR/config.sh
-echo "export MPI_DIR=$MPI_DIR"  >> $LBPM_CONFIG_DIR/config.sh
+echo "export LBPM_MPI_DIR=$MPI_DIR"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_BIN=$LBPM_INSTALL_DIR/bin" >> $LBPM_CONFIG_DIR/config.sh
-echo export MPIRUN='"'$MPI_DIR/bin/mpirun $MPIARGS'"'  >> $LBPM_CONFIG_DIR/config.sh
+echo export LBPM_MPIRUN='"'$MPI_DIR/bin/mpirun $MPIARGS'"'  >> $LBPM_CONFIG_DIR/config.sh
 echo export LBPM_MPIARGS='"'$MPIARGS'"' >> $LBPM_CONFIG_DIR/config.sh
 if [[ -f $NVCC ]]; then
     echo 'export mode="nvidia"' >> $LBPM_CONFIG_DIR/config.sh
@@ -110,7 +108,7 @@ if [[ -f $NVCC ]]; then
 else
     echo 'export mode="cpu"' >> $LBPM_CONFIG_DIR/config.sh
 fi
-echo "export MPI_DIR=$MPI_DIR"  >> $LBPM_CONFIG_DIR/config.sh
+echo "export LBPM_MPI_DIR=$MPI_DIR"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_HDF5_DIR=$LBPM_HDF5_DIR"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export LD_LIBRARY_PATH=$MPI_DIR/lib:$LBPM_HDF5_DIR/lib:$LD_LIBRARY_PATH" >> $LBPM_CONFIG_DIR/config.sh
 echo "export PATH=$MPI_DIR/bin:$PATH" >> $LBPM_CONFIG_DIR/config.sh

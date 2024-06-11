@@ -14,25 +14,30 @@ class domain_db:
         self.nx = self.Nx   # sub-domain sizes
         self.ny = self.Ny 
         self.nz = self.Nz
-        self.npx = 1        # process grid
-        self.npy = 1
-        self.npz = 1
+        self.nproc = [1, 1, 1]        # process grid
+        self.region = [0, 0, 0, self.Nx, self.Ny, self.Nz]
         self.voxel_length = voxlen
         self.labels = np.unique(img)
         self.label_count = self.labels.size
         self.solid_labels = self.labels[self.labels<=0]
         print("Image labels " + str(self.labels) )
         print("Solid labels " + str(self.solid_labels) )
+
+    # crop the image
+    def subregion(self, origin, size):
+        self.region[0:3] = origin
+        self.region[3:6] = size
+        print("Simulation region: ")
+        print("    origin: " + str(self.region[0:3]))
+        print("    size: " + str(self.region[3:6]))
         
     # basic domain decomposition with process grid [px, py, pz]
-    def decomp(self, px, py, pz):
-        self.npx = px
-        self.npy = py
-        self.npz = pz
-        self.nx = np.int32(self.Nx / px )
-        self.ny = np.int32(self.Ny / py )
-        self.nz = np.int32(self.Nz / pz )
-        print("Process grid " + str([self.npx, self.npy, self.npz]))
+    def decomp(self, process_layout):
+        self.nproc = process_layout
+        self.nx = np.int32(self.region[3] / self.nproc[0] )
+        self.ny = np.int32(self.region[4] / self.nproc[1] )
+        self.nz = np.int32(self.region[5] / self.nproc[2] )
+        print("Process grid " + str(self.nproc))
         print("Sub-domain size " + str([self.nx, self.ny, self.nz]))
 
     def view(self, slice): 
