@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import urllib.request
 from pyLBPM import lbpm_domain
@@ -7,8 +8,16 @@ from pyLBPM import lbpm_color_model
 print("Running LBPM built from git commit " + str(os.environ['LBPM_GIT_COMMIT']))
 
 # Set up the simulation directory
-SimulationDir = "/work/02453/mcclurej/ls6/DRP24/Example"
-os.chdir(SimulationDir)
+try:
+    SimulationDir=sys.argv[1]
+    print(SimulationDir)
+    os.chdir(SimulationDir)
+    print("LBPM color simulation directory path at " + str(SimulationDir))
+except:
+    print('Please provide simulation directory as argument:')
+    print('example usage: python setup_color_simulation.py /path/to/simulation/directory ')
+
+#os.chdir(SimulationDir)
 print("Simulation directory is " + SimulationDir)
 
-lbpm_color_model.launch_simulation()
+lbpm_color_model.launch_simulation(SimulationDir)

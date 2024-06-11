@@ -6,23 +6,40 @@ import matplotlib.pyplot as plt
 class domain_db:
 
     def __init__(self, name, img, voxlen = 1.0):
-        # Domain should be initialized from 3D numpy array
-        # set up the array in advance to match the simulation domain
+        # Domain should be initialized from 3D numpy array                                                                                   
+        # set up the array in advance to match the simulation domain                                                                         
         self.name = name
         self.image = img.astype(np.uint8)
         self.Nx, self.Ny, self.Nz = self.image.shape
-        self.nx = self.Nx   # sub-domain sizes
-        self.ny = self.Ny 
+        self.nx = self.Nx   # sub-domain sizes                                                                                               
+        self.ny = self.Ny
         self.nz = self.Nz
-        self.nproc = [1, 1, 1]        # process grid
+        self.nproc = [1, 1, 1]        # process grid                                                                                         
         self.region = [0, 0, 0, self.Nx, self.Ny, self.Nz]
         self.voxel_length = voxlen
         self.labels = np.unique(img)
         self.label_count = self.labels.size
-        self.solid_labels = self.labels[self.labels<=0]
-        print("Image labels " + str(self.labels) )
+        self.write_labels = self.labels
+        self.solid_labels = self.write_labels[self.write_labels<=0]
+        print("Original image labels " + str(self.labels) )
+        print("Simulation image labels " + str(self.write_labels) )
         print("Solid labels " + str(self.solid_labels) )
-
+        
+    # assign relabeling for LBPM convention
+    #    non-negative labels are solid / immobile phase
+    #    phase 1 is NWP
+    #    phase 2 is WP
+    def relabel(self, newlabels):
+        if (len(newlabels) != len(self.labels)):
+            print("Error assigning new labels, length must match!")
+            print(self.labels)
+        else :
+            self.write_labels = np.array(newlabels)
+            self.solid_labels = self.write_labels[self.write_labels<=0]
+            print("Original image labels " + str(self.labels) )
+            print("Simulation image labels " + str(self.write_labels) )
+            print("Solid labels " + str(self.solid_labels)) 
+        
     # crop the image
     def subregion(self, origin, size):
         self.region[0:3] = origin

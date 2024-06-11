@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Set the simulation directory
+if [-n $1]; then
+    SIMULATION_DIRECTORY=$1
+else
+    SIMULATION_DIRECTORY=`pwd`
+fi       
+echo "Simulation directory is $SIMULATION_DIRECTORY"
+cd $SIMULATION_DIRECTORY
+
 # Check if the number of processors available to LBPM has been set
 if [ -n "$LBPM_NUM_PROCS" ]; then
   echo "You supplied the first parameter!"
@@ -17,3 +26,5 @@ LBPM_LAUNCH_COMMAND="$MPIRUN -np $LBPM_NUM_PROCS $LBPM_BIN/lbpm_color_simulator"
 echo "$LBPM_LAUNCH_COMMAND"
 
 $LBPM_LAUNCH_COMMAND input.db
+
+exit;
