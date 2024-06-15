@@ -1,5 +1,5 @@
 # pyLBPM
-1;95;0c
+
 ## A python-based management interface for the LBPM software
 
 ## Installation
