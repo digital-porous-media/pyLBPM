@@ -141,4 +141,47 @@ class color_db:
 def launch_simulation(simulation_directory):
     success=subprocess.run(["bash", "/home1/02453/mcclurej/pyLBPM/scripts/run_lbpm_color.sh", simulation_directory])
 
+def read_timelog(simulation_directory, plot_data=True):
+    DATA=pd.read_csv(str(simdir+"/timelog.csv"),sep=" ")
+
+    if (plot_data):
+        plt.figure()
+        plt.plot(DATA['sw'])
+        plt.xlabel('time increment')
+        plt.ylabel('saturation')
+        plt.show()
+        
+    return DATA
+
+def read_subphase(simulation_directory, plot_data=True):
+    DATA=pd.read_csv(str(simdir+"/subphase.csv"),sep=" ")
+
+    if (plot_data):
+        plt.figure()
+        plt.plot(DATA['time'],DATA['Vwc'])
+        plt.xlabel('timestep')
+        plt.ylabel('connected water volume')
+        plt.show()
+        
+    return DATA
+
+def read_scal(simulation_directory, plot_data=True, permeability=1.0):
+    SCAL=pd.read_csv(str(simdir+"/SCAL.csv"),sep=" ")
+
+    # Scale the curve to the permeability (if provided)
+    krn=SCAL['eff.perm.oil.upper.bound']/permeability
+    krw=SCAL['eff.perm.water.upper.bound']/permeability
+
+    if (plot_data):
+        plt.figure()
+        plt.plot(SCAL['sat.water'],krn, c='r', label='oil')
+        plt.plot(SCAL['sat.water'],krw, c='b', label='water')
+        plt.xlabel('water saturation')
+        plt.ylabel('relative permeability')
+        ax = plt.gca()
+        ax.set_xlim([0,1])
+        plt.legend()
+        plt.show()
+    
+    return SCAL
 
