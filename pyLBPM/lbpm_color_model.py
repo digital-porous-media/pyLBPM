@@ -2,27 +2,10 @@ import re
 import os
 import subprocess
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
-def create_input_database(filename, content):
-    infile = open(filename,'w')
-    infile.write(content)
-    infile.close()
-
-def write_input_database(filename, content):
-    infile = open(filename,'a')
-    infile.write(content)
-    infile.close()
-
-def read_input_database(filename):
-    infile = open(filename,'r')
-    content = infile.read()
-    return content
-
-def lbpm_input_string_from_list( listValues ):
-    string_values = str(list(listValues))
-    string_values = string_values.strip("[]")
-    return string_values
+from pyLBPM.lbpm_input_database	import *
 
 class color_db:
 
@@ -37,7 +20,7 @@ class color_db:
                          ]
         self.protocol = "user specified"
         self.restart = False
-        self.BC = 0
+        self.BC = self.Dm.BoundaryCondition
         self.useProtocol = False
         self.timestepMax = 10000000
         self.tauA = 0.7
@@ -75,11 +58,15 @@ class color_db:
                     self.outletLayers = [0, 0, 5]
                     self.inletLayers = [0, 0, 5]
                     self.target_capillary = 1.0e-5
-                    self.BC = 0
+                    self.Dm.BoundaryCondition = 0
                     
-                elif (self.protocol == "fractional flow"):
+                elif (self.protocol == "core flooding"):
+                    self.Dm.BoundaryCondition = 4
                     #self.flux = capillary_number*interfacial_tension/(rho_w*nu_w)
                     print("not implemented")
+                    
+            self.BC = self.Dm.BoundaryCondition
+
                     
         if (self.useProtocol == False):
             print("Protocol not set. Please choose from the options below\n" 
@@ -97,6 +84,7 @@ class color_db:
         LBPM_input_file += "   ReadValues = " + lbpm_input_string_from_list(self.Dm.labels) +"\n"
         LBPM_input_file += "   WriteValues = " + lbpm_input_string_from_list(self.Dm.write_labels) +"\n"
         LBPM_input_file += "   ComponentLabels = " + lbpm_input_string_from_list(self.Dm.solid_labels) +"\n"
+        LBPM_input_file += "   BC = " +	str(self.Dm.BoundaryCondition) + "\n"
         LBPM_input_file += '}\n'
         LBPM_input_file += "Color {\n"
         if (self.useProtocol):

@@ -14,7 +14,9 @@ class domain_db:
         self.nx = self.Nx   # sub-domain sizes                                                                                               
         self.ny = self.Ny
         self.nz = self.Nz
-        self.nproc = [1, 1, 1]        # process grid                                                                                         
+        self.nproc = [1, 1, 1]        # process grid
+
+        self.BoundaryCondition = 0    # default is periodic bC
         self.region = [0, 0, 0, self.Nx, self.Ny, self.Nz]
         self.voxel_length = voxlen
         self.labels = np.unique(img)

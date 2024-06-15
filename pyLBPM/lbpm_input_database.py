@@ -3,6 +3,26 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+def create_input_database(filename, content):
+    infile = open(filename,'w')
+    infile.write(content)
+    infile.close()
+
+def write_input_database(filename, content):
+    infile = open(filename,'a')
+    infile.write(content)
+    infile.close()
+
+def read_input_database(filename):
+    infile = open(filename,'r')
+    content = infile.read()
+    return content
+
+def lbpm_input_string_from_list( listValues ):
+    string_values = str(list(listValues))
+    string_values = string_values.strip("[]")
+    return string_values
+
 def is_float(element:any) -> bool:
     if element is None:
         return False
@@ -11,7 +31,6 @@ def is_float(element:any) -> bool:
         return True
     except ValueError:
         return False
-
 
 def ExtractDatabaseSection( File, Section ):
     SectionKey= Section+" {"

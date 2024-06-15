@@ -21,7 +21,7 @@ echo "LBPM simulation from git commit: $LBPM_GIT_COMMIT"
 echo "LBPM install path: $LBPM_BIN"
 echo "MPI install path: $MPI_DIR"
 
-LBPM_LAUNCH_COMMAND="$MPIRUN -np $LBPM_NUM_PROCS $LBPM_BIN/lbpm_color_simulator"
+LBPM_LAUNCH_COMMAND="$MPIRUN -np $LBPM_NUM_PROCS $LBPM_BIN/lbpm_permeability_simulator"
 
 echo "$LBPM_LAUNCH_COMMAND"
 
