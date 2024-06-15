@@ -45,7 +45,14 @@ python example/launch_color.py $SIMDIR
 
 ## Managing simulation data
 
-To do: add python interface to read CSV data from active or completed simulations
+From the python command line
+```
+sdir="/path/to/my/simulation"
+from pyLBPM import lbpm_color_model
+timelog=lbpm_color_model.read_timelog(simulation_directory=sdir, plot_data=False)
+print(timelog)
+```
+
 
 ## Visualizing simulation data
 
