@@ -130,7 +130,7 @@ def launch_simulation(simulation_directory):
     success=subprocess.run(["bash", "/home1/02453/mcclurej/pyLBPM/scripts/run_lbpm_color.sh", simulation_directory])
 
 def read_timelog(simulation_directory, plot_data=True):
-    DATA=pd.read_csv(str(simdir+"/timelog.csv"),sep=" ")
+    DATA=pd.read_csv(str(simulation_directory+"/timelog.csv"),sep=" ")
 
     if (plot_data):
         plt.figure()
@@ -142,7 +142,7 @@ def read_timelog(simulation_directory, plot_data=True):
     return DATA
 
 def read_subphase(simulation_directory, plot_data=True):
-    DATA=pd.read_csv(str(simdir+"/subphase.csv"),sep=" ")
+    DATA=pd.read_csv(str(simulation_directory+"/subphase.csv"),sep=" ")
 
     if (plot_data):
         plt.figure()
@@ -154,7 +154,7 @@ def read_subphase(simulation_directory, plot_data=True):
     return DATA
 
 def read_scal(simulation_directory, plot_data=True, permeability=1.0):
-    SCAL=pd.read_csv(str(simdir+"/SCAL.csv"),sep=" ")
+    SCAL=pd.read_csv(str(simulation_directory+"/SCAL.csv"),sep=" ")
 
     # Scale the curve to the permeability (if provided)
     krn=SCAL['eff.perm.oil.upper.bound']/permeability

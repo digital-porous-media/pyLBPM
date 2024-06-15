@@ -1,5 +1,5 @@
 # pyLBPM
-
+1;95;0c
 ## A python-based management interface for the LBPM software
 
 ## Installation
@@ -24,7 +24,7 @@ To install LBPM from the python command line
 ```
 from pyLBPM import lbpm_setup
 lbpm_install_path="~/local"
-lbpm_config_setup=lbpm_setup.install_dependencies(lbpm_install_path)
+lbpm_config_setup=lbpm_setup.install_lbpm(lbpm_install_path)
 ```
 
 ## Launching simulations

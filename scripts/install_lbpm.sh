@@ -6,6 +6,10 @@ if [[ -z "${LBPM_CONFIG_DIR}" ]]; then
    source ~/.pyLBPM/config.sh
 fi
 
+if [[ -z "${LBPM_INSTALL_ROOT_DIR}" ]]; then
+   export LBPM_INSTALL_ROOT_DIR=$HOME/local
+fi
+
 export LBPM_INSTALL_DIR=$LBPM_INSTALL_ROOT_DIR/LBPM
 export LBPM_SOURCE_DIR=$SOURCE_DIR/LBPM
 
