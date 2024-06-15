@@ -6,7 +6,7 @@
 To install pyLBPM with pip
 
 ```
-git clone git@github.com:JamesEMcClure/pyLBPM.git
+git clone git@github.com:digital-porous-media/pyLBPM.git
 cd pyLBPM
 pip install ./
 ```
