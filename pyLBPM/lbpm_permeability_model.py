@@ -49,7 +49,7 @@ class permeability_db:
         print(LBPM_input_file)
 
 def launch_simulation(simulation_directory):
-    success=subprocess.run(["bash", "/home1/02453/mcclurej/pyLBPM/scripts/run_lbpm_permeability.sh", simulation_directory])
+    success=subprocess.run(["bash", "run_lbpm_permeability.sh", simulation_directory])
 
 def read_timelog(simulation_directory, plot_data=True):
     DATA=pd.read_csv(str(simdir+"/timelog.csv"),sep=" ")

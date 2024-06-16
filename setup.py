@@ -13,9 +13,13 @@ setup(
                       'pyyaml',
                       'pathlib',
                       'matplotlib',
-                      'numpy',                     
-                      ],
-
+                      'numpy',
+    ],
+    scripts=['scripts/install_lbpm_dependencies.sh',
+             'scripts/install_lbpm.sh',
+             'scripts/run_lbpm_color.sh',
+             'scripts/run_lbpm_permeability.sh',
+    ],
     classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: Science/Research',

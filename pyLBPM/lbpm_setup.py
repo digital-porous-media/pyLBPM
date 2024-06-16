@@ -37,7 +37,7 @@ def install_dependencies(install_path):
     if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":
         # linux
         download_dependencies(install_path)
-        success=subprocess.run(["bash", "scripts/install_lbpm_dependencies.sh","install_path", "--install"])
+        success=subprocess.run(["bash", "install_lbpm_dependencies.sh","install_path", "--install"])
 
     else :
         print("Your platform is "+str(platform),": only linux installation is supported.")
@@ -50,7 +50,7 @@ def download_dependencies(install_path):
         # check the operating system
     if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":
         # linux        
-        success=subprocess.run(["bash", "scripts/install_lbpm_dependencies.sh","install_path", "--download"])
+        success=subprocess.run(["bash", "install_lbpm_dependencies.sh","install_path", "--download"])
 
     else :
         print("Your platform is "+str(platform),": only linux installation is supported.")
@@ -65,7 +65,7 @@ def install_lbpm(install_path):
     if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":
         # linux
 
-        success=subprocess.run(["bash", "scripts/install_lbpm.sh"])
+        success=subprocess.run(["bash", "install_lbpm.sh"])
 
     else :
         print("Your platform is "+str(platform.system()),": only linux installation is supported.")
@@ -73,5 +73,4 @@ def install_lbpm(install_path):
 
     #success=True
     return success
-
 

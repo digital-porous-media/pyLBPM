@@ -3,12 +3,13 @@
 ## A python-based management interface for the LBPM software
 
 ## Installation
-To install pyLBPM with pip
+To install pyLBPM with pip (note python installs scripts to `$HOME/.local/.bin`)
 
 ```
 git clone git@github.com:JamesEMcClure/pyLBPM.git
 cd pyLBPM
 pip install ./
+export PATH=$HOME/.local/bin:$PATH
 ```
 
 To download LBPM dependencies, launch a python command prompt and run the following from the python command line
