@@ -3,11 +3,13 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+from pyLBPM.lbpm_input_database import *
+
 class domain_db:
 
     def __init__(self, name, img, voxlen = 1.0):
-        # Domain should be initialized from 3D numpy array                                                                                   
-        # set up the array in advance to match the simulation domain                                                                         
+        # Domain should be initialized from 3D numpy array
+        # set up the array in advance to match the simulation domain                                                     
         self.name = name
         self.image = img.astype(np.uint8)
         self.Nx, self.Ny, self.Nz = self.image.shape
@@ -67,3 +69,18 @@ class domain_db:
         plt.axis('equal')
         plt.show()
 
+    def add_section(self, LBPM_input_file):
+        LBPM_input_file = "Domain {\n"
+        LBPM_input_file += '   Filename = "'+str(self.name)+'"'+"\n"
+        LBPM_input_file += '   ReadType ="8bit"'+"\n"
+        LBPM_input_file += '   voxel_length = '+str(self.voxel_length)+"\n"
+        LBPM_input_file += "   N = "+str(self.Nx)+", "+str(self.Ny)+", "+str(self.Nz)+"\n"
+        LBPM_input_file += "   offset = " + lbpm_input_string_from_list(self.region[0:3]) +"\n"
+        LBPM_input_file += "   nproc = " + lbpm_input_string_from_list(self.nproc) +"\n"
+        LBPM_input_file += "   n = "+str(self.nx)+", "+str(self.ny)+", "+str(self.nz)+"\n"
+        LBPM_input_file += "   ReadValues = " + lbpm_input_string_from_list(self.labels) +"\n"
+        LBPM_input_file += "   WriteValues = " + lbpm_input_string_from_list(self.write_labels) +"\n"
+        LBPM_input_file += "   ComponentLabels = " + lbpm_input_string_from_list(self.solid_labels) +"\n"
+        LBPM_input_file += "   BC = " + str(self.BoundaryCondition) + "\n"
+        LBPM_input_file += '}\n'
+        return(LBPM_input_file)

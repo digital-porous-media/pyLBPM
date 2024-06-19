@@ -7,12 +7,59 @@ import matplotlib.pyplot as plt
 
 from pyLBPM.lbpm_input_database	import *
 
+class FlowAdaptor_db:
+    def __init__(self):
+        self.max_steady_timesteps = 200000
+        self.min_steady_timesteps = 100000
+        self.fractional_flow_increment = 0.1
+        self.mass_fraction_factor = 0.0002
+        self.endpoint_threshold = 0.1
+
+    def add_section(self,LBPM_input_file):
+        LBPM_input_file += "FlowAdaptor {\n"
+        LBPM_input_file += '   max_steady_timesteps = '+str(self.max_steady_timesteps)+"\n"
+        LBPM_input_file += '   min_steady_timesteps = '+str(self.min_steady_timesteps)+"\n"
+        LBPM_input_file += '   fractional_flow_increment = '+str(self.fractional_flow_increment)+"\n"
+        LBPM_input_file += '   mass_fraction_factor = '+str(self.mass_fraction_factor)+"\n"
+        LBPM_input_file += '   endpoint_threshold = '+str(self.endpoint_threshold)+"\n"
+        LBPM_input_file += "}\n"
+        return(LBPM_input_file)
+
+class Analysis_db:
+    def __init__(self):
+        self.subphase_analysis_interval = 5000
+        self.analysis_interval = 1000
+        
+    def add_section(self,LBPM_input_file):
+        LBPM_input_file += 'Analysis { \n'
+        LBPM_input_file += '   restart_file = "Restart"\n'
+        LBPM_input_file += '   analysis_interval = '+str(self.analysis_interval)+"\n"
+        LBPM_input_file += '   subphase_analysis_interval = '+str(self.subphase_analysis_interval)+"\n"
+        LBPM_input_file += '}\n'
+        return(LBPM_input_file)
+
+class Visualization_db:
+    def __init__(self):
+        self.save_8bit_raw = True
+        self.write_silo = False
+        
+    def add_section(self,LBPM_input_file):
+        LBPM_input_file += 'Visualization { \n'
+        LBPM_input_file += '   save_8bit_raw = true \n'
+        LBPM_input_file += '   write_silo = false \n'
+        LBPM_input_file += '}\n'
+        return(LBPM_input_file)
+    
 class color_db:
 
     def __init__(self, domain):
         # Domain should be initialized from 3D numpy array
         # set up default values for input parameters
         self.Dm = domain
+        self.FlowAdaptor = FlowAdaptor_db()
+        self.Visualization = Visualization_db()
+        self.Analysis = Analysis_db()
+        
         self.protocols = [ 'fractional flow',
                           'centrifuge', 
                           'core flooding', 
@@ -71,25 +118,11 @@ class color_db:
         if (self.useProtocol == False):
             print("Protocol not set. Please choose from the options below\n" 
                   + str(self.protocols))
-                    
-    def save_config_file(self):
-        LBPM_input_file = "Domain {\n"
-        LBPM_input_file += '   Filename = "'+str(self.Dm.name)+'"'+"\n"
-        LBPM_input_file += '   ReadType ="8bit"'+"\n"
-        LBPM_input_file += '   voxel_length = '+str(self.Dm.voxel_length)+"\n"
-        LBPM_input_file += "   N = "+str(self.Dm.Nx)+", "+str(self.Dm.Ny)+", "+str(self.Dm.Nz)+"\n"
-        LBPM_input_file += "   offset = " + lbpm_input_string_from_list(self.Dm.region[0:3]) +"\n"
-        LBPM_input_file += "   nproc = " + lbpm_input_string_from_list(self.Dm.nproc) +"\n"
-        LBPM_input_file += "   n = "+str(self.Dm.nx)+", "+str(self.Dm.ny)+", "+str(self.Dm.nz)+"\n"
-        LBPM_input_file += "   ReadValues = " + lbpm_input_string_from_list(self.Dm.labels) +"\n"
-        LBPM_input_file += "   WriteValues = " + lbpm_input_string_from_list(self.Dm.write_labels) +"\n"
-        LBPM_input_file += "   ComponentLabels = " + lbpm_input_string_from_list(self.Dm.solid_labels) +"\n"
-        LBPM_input_file += "   BC = " +	str(self.Dm.BoundaryCondition) + "\n"
-        LBPM_input_file += '}\n'
+
+    def add_section(self,LBPM_input_file):
         LBPM_input_file += "Color {\n"
         if (self.useProtocol):
             LBPM_input_file += '   protocol = "'+str(self.protocol)+'"'+"\n"
-            
         LBPM_input_file += '   Restart = '+str(self.restart)+"\n"
         LBPM_input_file += '   WettingConvention = "SCAL"'+"\n"
         LBPM_input_file += "   ComponentLabels = " + lbpm_input_string_from_list(self.Dm.solid_labels) +"\n"
@@ -106,25 +139,16 @@ class color_db:
         LBPM_input_file += "   outletLayers = " + lbpm_input_string_from_list(self.outletLayers) +"\n"
         LBPM_input_file += "   inletLayers = " + lbpm_input_string_from_list(self.inletLayers) +"\n"
         LBPM_input_file += '}\n'
-        LBPM_input_file += 'Visualization { \n'
-        LBPM_input_file += '   save_8bit_raw = true \n'
-        LBPM_input_file += '   write_silo = false \n'
-        LBPM_input_file += '}\n'
-        LBPM_input_file += 'Analysis { \n'
-        LBPM_input_file += '   restart_file = "Restart"\n'
-        LBPM_input_file += '   subphase_analysis_interval = 5000'+"\n"
-        LBPM_input_file += '   analysis_interval = 1000'+"\n"
-        LBPM_input_file += '}\n'
-        LBPM_input_file += "FlowAdaptor {\n"
-        if self.protocol == "fractional flow" :
-            LBPM_input_file += '   max_steady_timesteps = 200000'+"\n"
-            LBPM_input_file += '   min_steady_timesteps = 100000'+"\n"
-            LBPM_input_file += '   fractional_flow_increment = 0.1'+"\n"
-            LBPM_input_file += '   mass_fraction_factor = 0.0002'+"\n"
-            LBPM_input_file += '   endpoint_threshold = 0.1'+"\n"
-        LBPM_input_file += "}\n"
+        return(LBPM_input_file)
+
+    def save_config_file(self):
+        LBPM_input_file=self.Dm.add_section("")
+        LBPM_input_file=self.add_section(LBPM_input_file)
+        LBPM_input_file=self.Visualization.add_section(LBPM_input_file)
+        LBPM_input_file=self.Analysis.add_section(LBPM_input_file) 
+        LBPM_input_file=self.FlowAdaptor.add_section(LBPM_input_file)
         create_input_database("input.db",LBPM_input_file)
-        print(LBPM_input_file)
+        print(LBPM_input_file)        
 
 def launch_simulation(simulation_directory):
     success=subprocess.run(["bash", "run_lbpm_color.sh", simulation_directory])
