@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/.pyLBPM/config.sh
+
 # Set the simulation directory
 if [-n $1]; then
     SIMULATION_DIRECTORY=$1
@@ -19,9 +21,9 @@ fi
 
 echo "LBPM simulation from git commit: $LBPM_GIT_COMMIT"
 echo "LBPM install path: $LBPM_BIN"
-echo "MPI install path: $MPI_DIR"
+echo "MPI install path: $LBPM_MPI_DIR"
 
-LBPM_LAUNCH_COMMAND="$MPIRUN -np $LBPM_NUM_PROCS $LBPM_BIN/lbpm_permeability_simulator"
+LBPM_LAUNCH_COMMAND="$LBPM_MPIRUN -np $LBPM_NUM_PROCS $LBPM_BIN/lbpm_permeability_simulator"
 
 echo "$LBPM_LAUNCH_COMMAND"
 

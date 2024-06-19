@@ -17,6 +17,8 @@ setup(
     ],
     scripts=['scripts/install_lbpm_dependencies.sh',
              'scripts/install_lbpm.sh',
+             'scripts/run_lbpm_morphdrain.sh',
+             'scripts/run_lbpm_morphopen.sh',
              'scripts/run_lbpm_color.sh',
              'scripts/run_lbpm_permeability.sh',
     ],

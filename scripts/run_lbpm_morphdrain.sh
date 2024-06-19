@@ -23,11 +23,11 @@ echo "LBPM simulation from git commit: $LBPM_GIT_COMMIT"
 echo "LBPM install path: $LBPM_BIN"
 echo "MPI install path: $LBPM_MPI_DIR"
 
-LBPM_LAUNCH_COMMAND="$LBPM_MPIRUN -np $LBPM_NUM_PROCS $LBPM_BIN/lbpm_color_simulator"
+LBPM_LAUNCH_COMMAND="$LBPM_MPIRUN -np $LBPM_NUM_PROCS $LBPM_BIN/lbpm_morphdrain_pp"
 
 echo "$LBPM_LAUNCH_COMMAND"
 
 # Launch the simulation and detach from the process
-$LBPM_LAUNCH_COMMAND input.db &
+$LBPM_LAUNCH_COMMAND input.db
 
 exit;

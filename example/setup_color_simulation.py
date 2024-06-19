@@ -4,6 +4,7 @@ import numpy as np
 import urllib.request
 from pyLBPM import lbpm_domain
 from pyLBPM import lbpm_color_model
+from pyLBPM import lbpm_morphology
 
 # LBPM simulation environment variables -- these need to be set from config file
 print(os.environ['LBPM_GIT_COMMIT'])
@@ -50,7 +51,27 @@ print("    Done.")
 #z_slice=100
 #dm.view(z_slice)
 
-print("Saving file...")
+print("Run morphological analysis")
+morphDrain = lbpm_morphology.morph_db(domain)
+morphDrain.target_saturation = 0.25
+morphDrain.save_config_file()
+lbpm_morphology.run_drainage(SimulationDir)
+print("    Done.")
+
+print("Read in the morphological file")
+MORPH_FILE=INPUT_FILE+".morphdrain.raw"
+# get the updated domain size
+Nx = domain.region[3]
+Ny = domain.region[4]
+Nz = domain.region[5]
+# read the image
+ID = np.fromfile(MORPH_FILE,dtype = np.uint8)
+ID.shape = (Nz,Ny,Nx)
+# update the domain
+domain = lbpm_domain.domain_db(MORPH_FILE,ID)
+domain.decomp([1,1,1])
+
+print("Saving input file...")
 colorSim = lbpm_color_model.color_db(domain)
 colorSim.set_protocol('fractional flow')
 
@@ -60,4 +81,3 @@ colorSim.timestepMax=5000
 colorSim.save_config_file()
 print("    Done.")
 print("Setup complete")
-

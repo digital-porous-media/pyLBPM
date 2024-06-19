@@ -11,7 +11,7 @@ class domain_db:
         self.name = name
         self.image = img.astype(np.uint8)
         self.Nx, self.Ny, self.Nz = self.image.shape
-        self.nx = self.Nx   # sub-domain sizes                                                                                               
+        self.nx = self.Nx   # sub-domain sizes
         self.ny = self.Ny
         self.nz = self.Nz
         self.nproc = [1, 1, 1]        # process grid
