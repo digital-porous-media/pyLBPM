@@ -56,11 +56,13 @@ def ConvertDatabaseFormat ( Section ):
     SectionList=SectionList.replace(',)',')')
     SectionList=SectionList.replace(');(',')\n(')
     for line in SectionList.split('\n'):
-        #print(line)
-        # split into key - value pairs
-        key=re.sub('\(','',line.split(":")[0])
-        value=re.sub('\)','',line.split(":")[1]).strip()
-        items=value.count(",")+1
+        try:
+            # split into key - value pairs
+            key=re.sub('\(','',line.split(":")[0])
+            value=re.sub('\)','',line.split(":")[1]).strip()
+            items=value.count(",")+1
+        except IndexError:
+            continue
         #handle vectors
         if (items > 1):
             vector=value
@@ -85,13 +87,13 @@ def ConvertDatabaseFormat ( Section ):
 
 def get_section( File, Section ):
     ReturnSection=ConvertDatabaseFormat(ExtractDatabaseSection(File,Section))
+    return ReturnSection
 
 def read_database(simulation_directory):
     #simulation_directory="../lbpm/lrc32"
-    input_file=os.path.join(simulation_directory,"input.db")
+    input_file=os.path.join(simulation_directory, "input.db")
     input_db=open(input_file,"r")
     input=input_db.read()
     input_db.close()
-    print(input)
+    # print(input)
     return(input)
-
