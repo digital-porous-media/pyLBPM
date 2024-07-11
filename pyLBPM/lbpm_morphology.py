@@ -40,7 +40,7 @@ def run_opening(simulation_directory):
     success=subprocess.run(["bash", "run_lbpm_morphopen.sh", simulation_directory])
 
 def read_morphdrain(simulation_directory, plot_data=True):
-    DATA=pd.read_csv(str(simdir+"/morphdrain.csv"),sep=" ")
+    DATA=pd.read_csv(str(simulation_directory+"/morphdrain.csv"),sep=" ")
 
     if (plot_data):
         plt.figure()
