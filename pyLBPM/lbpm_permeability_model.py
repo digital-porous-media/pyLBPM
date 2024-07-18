@@ -92,7 +92,7 @@ def read_timelog(simulation_directory, plot_data=True):
         Data from the timelog of the simulation
         rtype: pandas.DataFrame
     """
-    DATA=pd.read_csv(str(simdir+"/timelog.csv"),sep=" ")
+    DATA=pd.read_csv(str(simulation_directory+"/timelog.csv"), sep=" ")
 
     if (plot_data):
         plt.figure()
