@@ -8,14 +8,33 @@ import matplotlib.pyplot as plt
 from pyLBPM.lbpm_input_database import *
 
 class morph_db:
+    """
+    A class used to represent a Morphological Database
+
+    Parameters:
+        3D numpy array representing the domain
+        type domain: numpy.ndarray
+    """
 
     def __init__(self, domain):
+        """
+        Initialize the morphological database with the given domain.
+
+        Parameters:
+            The domain to be used for the morphological database
+            type domain: numpy.ndarray
+        """
         # Domain should be initialized from 3D numpy array
         # set up default values for input parameters
         self.Dm = domain
         self.target_saturation = 0.5
                     
     def save_config_file(self):
+        """
+        Save the configuration file for the domain.
+
+        :return: None
+        """
         LBPM_input_file = "Domain {\n"
         LBPM_input_file += '   Filename = "'+str(self.Dm.name)+'"'+"\n"
         LBPM_input_file += '   ReadType ="8bit"'+"\n"
@@ -34,12 +53,44 @@ class morph_db:
         print(LBPM_input_file)
 
 def run_drainage(simulation_directory):
+    """
+    Run the drainage simulation.
+
+    Parameters:
+        Directory where the simulation is to be run
+        type simulation_directory: str
+
+    Returns: 
+        None
+    """
     success=subprocess.run(["bash", "run_lbpm_morphdrain.sh", simulation_directory])
 
 def run_opening(simulation_directory):
+    """
+    Run the opening simulation.
+
+    Parameters:
+        Directory where the simulation is to be run
+        type simulation_directory: str
+    Returns: 
+        None
+    """
     success=subprocess.run(["bash", "run_lbpm_morphopen.sh", simulation_directory])
 
 def read_morphdrain(simulation_directory, plot_data=True):
+    """
+    Read and optionally plot data from the morphdrain simulation.
+
+    Parameters:
+        Directory where the simulation data is located
+        type simulation_directory: str
+        param plot_data: Whether to plot the data, defaults to True
+        type plot_data: bool
+    
+    Returns: 
+        Data from the morphdrain simulation
+        rtype: pandas.DataFrame
+    """
     DATA=pd.read_csv(str(simulation_directory+"/morphdrain.csv"),sep=" ")
 
     if (plot_data):

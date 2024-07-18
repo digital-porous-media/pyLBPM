@@ -8,7 +8,25 @@ import matplotlib.pyplot as plt
 from pyLBPM.lbpm_input_database	import *
 
 class FlowAdaptor_db:
+    """
+    Manages flow parameters for simulations.
+
+    Attributes
+        max_steady_timesteps: int, maximum number of steady timesteps
+        min_steady_timesteps: int, minimum number of steady timesteps
+        fractional_flow_increment: float, increment for fractional flow
+        mass_fraction_factor: float, factor for mass fraction
+        endpoint_threshold: float, threshold for endpoint
+
+    This is a flow adapter description For each of the functions need a doc string 
+		Description of what the func does
+		Parameter & args
+		Returns 
+    """
     def __init__(self):
+        """
+        Initializes the FlowAdaptor_db with default parameters.
+        """
         self.max_steady_timesteps = 200000
         self.min_steady_timesteps = 100000
         self.fractional_flow_increment = 0.1
@@ -16,6 +34,15 @@ class FlowAdaptor_db:
         self.endpoint_threshold = 0.1
 
     def add_section(self,LBPM_input_file):
+        """
+        Adds flow parameters to the given LBPM input file string.
+
+        Parameters
+            LBPM_input_file: str, the LBPM input file content
+
+        Returns
+            str: The updated LBPM input file content with added flow parameters
+        """        
         LBPM_input_file += "FlowAdaptor {\n"
         LBPM_input_file += '   max_steady_timesteps = '+str(self.max_steady_timesteps)+"\n"
         LBPM_input_file += '   min_steady_timesteps = '+str(self.min_steady_timesteps)+"\n"
@@ -26,11 +53,30 @@ class FlowAdaptor_db:
         return(LBPM_input_file)
 
 class Analysis_db:
+    """
+    Manages analysis parameters for simulations.
+
+    Attributes
+        subphase_analysis_interval: int, interval for subphase analysis
+        analysis_interval: int, interval for regular analysis
+    """
     def __init__(self):
+        """
+        Initializes the Analysis_db with default parameters.
+        """
         self.subphase_analysis_interval = 5000
         self.analysis_interval = 1000
         
     def add_section(self,LBPM_input_file):
+        """
+        Adds analysis parameters to the given LBPM input file string.
+
+        Parameters
+            LBPM_input_file: str, the LBPM input file content
+
+        Returns
+            str: The updated LBPM input file content with added analysis parameters
+        """
         LBPM_input_file += 'Analysis { \n'
         LBPM_input_file += '   restart_file = "Restart"\n'
         LBPM_input_file += '   analysis_interval = '+str(self.analysis_interval)+"\n"
@@ -39,11 +85,30 @@ class Analysis_db:
         return(LBPM_input_file)
 
 class Visualization_db:
+    """
+    Manages visualization parameters for simulations.
+
+    Attributes
+        save_8bit_raw: bool, flag to save 8-bit raw data
+        write_silo: bool, flag to write silo data
+    """
     def __init__(self):
+        """
+        Initializes the Visualization_db with default parameters.
+        """
         self.save_8bit_raw = True
         self.write_silo = False
         
     def add_section(self,LBPM_input_file):
+        """
+        Adds visualization parameters to the given LBPM input file string.
+
+        Parameters
+            LBPM_input_file: str, the LBPM input file content
+
+        Returns
+            str: The updated LBPM input file content with added visualization parameters
+        """
         LBPM_input_file += 'Visualization { \n'
         LBPM_input_file += '   save_8bit_raw = true \n'
         LBPM_input_file += '   write_silo = false \n'
@@ -51,8 +116,14 @@ class Visualization_db:
         return(LBPM_input_file)
     
 class color_db:
-
+    """
+    Manages color model parameters for simulations.
+    """
     def __init__(self, domain):
+        """
+        Initializes the color_db with default parameters.
+        """
+        # Initialize attributes here
         # Domain should be initialized from 3D numpy array
         # set up default values for input parameters
         self.Dm = domain
@@ -93,6 +164,15 @@ class color_db:
               + " (change manually if desired)"
              )
     def set_protocol(self, string):
+        """
+        Sets the simulation protocol.
+
+        Parameters
+            string: str, the protocol to set
+
+        Returns
+            None
+        """
         self.useProtocol = False
         for option in self.protocols:
             if (option == string):
@@ -120,6 +200,16 @@ class color_db:
                   + str(self.protocols))
 
     def add_section(self,LBPM_input_file):
+        """
+        Adds color model parameters to the given LBPM input file string.
+
+        Parameters
+            LBPM_input_file: str, the LBPM input file content
+
+        Returns
+            str: The updated LBPM input file content with added color model parameters
+        """
+        # Add implementation here
         LBPM_input_file += "Color {\n"
         if (self.useProtocol):
             LBPM_input_file += '   protocol = "'+str(self.protocol)+'"'+"\n"

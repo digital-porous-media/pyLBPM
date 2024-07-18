@@ -5,6 +5,13 @@ import yaml
 from pathlib import Path
 
 def get_config():
+    """
+    Get the configuration from the config file.
+
+    Returns: 
+        Configuration data
+        rtype: dict or None
+    """
 
     config_file=Path('~/.pyLBPM/config.yml')
     environment_file=Path('~/.pyLBPM/config.sh')
@@ -19,6 +26,13 @@ def get_config():
 
 
 def initialize():
+    """
+    Initialize the LBPM setup.
+
+    Returns: 
+        Configuration data or None
+        rtype: dict or None
+    """    
     config = None
     if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":
         print("Enter path to LBPM installation:")
@@ -32,6 +46,17 @@ def initialize():
     return config
 
 def install_dependencies(install_path):
+    """
+    Install the dependencies for LBPM.
+
+    Paramters:
+        param install_path: Path to the installation directory
+        type install_path: str or Path
+    
+    Returns: 
+        Success status
+        rtype: bool
+    """    
     success=False
         # check the operating system
     if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":
@@ -46,6 +71,17 @@ def install_dependencies(install_path):
     return success
 
 def download_dependencies(install_path):
+    """
+    Download the dependencies for LBPM.
+
+    Paramters:
+        param install_path: Path to the installation directory
+        type install_path: str or Path
+    
+    Returns: 
+        Success status
+        rtype: bool
+    """    
     success=False
         # check the operating system
     if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":
@@ -60,6 +96,17 @@ def download_dependencies(install_path):
 
 
 def install_lbpm(install_path):
+    """
+    Install the LBPM software.
+
+    Paramters:
+        param install_path: Path to the installation directory
+        type install_path: str or Path
+    
+    Returns: 
+        Success status
+        rtype: bool
+    """   
     success=True
     # check the operating system    
     if platform.system() == "linux" or platform.system() == "linux2" or platform.system() == "Linux":

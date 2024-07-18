@@ -6,8 +6,18 @@ import matplotlib.pyplot as plt
 from pyLBPM.lbpm_input_database import *
 
 class domain_db:
-
     def __init__(self, name, img, voxlen = 1.0):
+        """
+       Initialize the domain with a given name, image, and voxel length.
+
+        Parameters
+            name: str
+                The name of the domain.
+            img: numpy.ndarray
+                A 3D numpy array representing the domain image.
+            voxlen: float, optional
+                The length of a voxel in the domain (default is 1.0).
+        """
         # Domain should be initialized from 3D numpy array
         # set up the array in advance to match the simulation domain                                                     
         self.name = name
@@ -34,6 +44,14 @@ class domain_db:
     #    phase 1 is NWP
     #    phase 2 is WP
     def relabel(self, newlabels):
+        """
+        Relabel the domain image with new labels.
+
+        Parameters
+            newlabels: list or numpy.ndarray
+                A list or array of new labels for the domain image.
+
+        """
         if (len(newlabels) != len(self.labels)):
             print("Error assigning new labels, length must match!")
             print(self.labels)
@@ -46,6 +64,16 @@ class domain_db:
         
     # crop the image
     def subregion(self, origin, size):
+        """
+        Define a subregion within the domain.
+
+        Parameters
+            origin: list or tuple
+                The origin coordinates [x, y, z] of the subregion.
+            size: list or tuple
+                The size [x, y, z] of the subregion.
+
+        """
         self.region[0:3] = origin
         self.region[3:6] = size
         print("Simulation region: ")

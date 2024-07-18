@@ -4,26 +4,67 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def create_input_database(filename, content):
+    """
+    Create an input database by writing content to a file.
+
+    Parameters
+        filename: The name of the file to create
+        content: The content to write to the file
+    """
     infile = open(filename,'w')
     infile.write(content)
     infile.close()
 
 def write_input_database(filename, content):
+    """
+    Write additional content to an existing input database file.
+
+    Parameters
+        filename: The name of the file to append content to
+        content: The content to append to the file
+    """
     infile = open(filename,'a')
     infile.write(content)
     infile.close()
 
 def read_input_database(filename):
+    """
+    Read the content of an input database file.
+
+    Parameters
+        filename: The name of the file to read
+
+    Returns
+        content: The content of the file
+    """
     infile = open(filename,'r')
     content = infile.read()
     return content
 
 def lbpm_input_string_from_list( listValues ):
+    """
+    Convert a list of values to a string representation.
+
+    Parameters
+        listValues: A list of values to convert
+
+    Returns
+        string: The string representation of the list values
+    """
     string_values = str(list(listValues))
     string_values = string_values.strip("[]")
     return string_values
 
 def is_float(element:any) -> bool:
+    """
+    Check if an element is a float.
+
+    Parameters
+        element: The element to check
+
+    Returns
+        bool: True if the element is a float, False otherwise
+    """
     if element is None:
         return False
     try: 
@@ -33,6 +74,16 @@ def is_float(element:any) -> bool:
         return False
 
 def ExtractDatabaseSection( File, Section ):
+    """
+    Extract a specific section from the database file content.
+
+    Parameters
+        File: The content of the database file
+        Section: The section to extract
+
+    Returns
+        section: The extracted section content
+    """
     SectionKey= Section+" {"
     if SectionKey in File:
         section = File.split(SectionKey,1)[1]
@@ -45,6 +96,15 @@ def ExtractDatabaseSection( File, Section ):
                 return section[:index].strip()
 
 def ConvertDatabaseFormat ( Section ):
+    """
+    Convert the format of a database section to a Python class.
+
+    Parameters
+        Section: The section to convert
+
+    Returns
+        A: A class with attributes corresponding to the section's key-value pairs
+    """
     class A: 
         pass
     # Clean the text 
@@ -84,9 +144,28 @@ def ConvertDatabaseFormat ( Section ):
     return (A)
 
 def get_section( File, Section ):
+    """
+    Get and convert a specific section from the database file
+
+    Parameters
+        File: The content of the database file
+        Section: The section to extract and convert
+
+    Returns
+        ReturnSection: The converted section as a Python class
+    """
     ReturnSection=ConvertDatabaseFormat(ExtractDatabaseSection(File,Section))
 
 def read_database(simulation_directory):
+    """
+    Read and return the content of the input database file in a simulation directory
+
+    Parameters
+        simulation_directory: The directory containing the input database file
+
+    Returns
+        input: The content of the input database file as a string
+    """
     #simulation_directory="../lbpm/lrc32"
     input_file=os.path.join(simulation_directory,"input.db")
     input_db=open(input_file,"r")
