@@ -6,16 +6,19 @@ import matplotlib.pyplot as plt
 from pyLBPM.lbpm_input_database import *
 
 class domain_db:
-    def __init__(self, name, img, voxlen=1.0):
-        """
-        Initialize the domain with a given name, image, and voxel length.
+    """
+    Domain section for the input database
 
-        :param name: The name of the domain.
-        :type name: str
-        :param img: A 3D numpy array representing the domain image.
-        :type img: numpy.ndarray
-        :param voxlen: The length of a voxel in the domain (default is 1.0).
-        :type voxlen: float, optional
+    Parameters:
+        name: str
+            The name of the domain.
+        img: numpy.ndarray
+            A 3D numpy array representing the domain image.
+        voxlen: float, optional
+            The length of a voxel in the domain (default is 1.0).
+    """
+    def __init__(self, name, img, voxlen=1.0):
+        """Constructor method
         """
         # Domain should be initialized from 3D numpy array
         # set up the array in advance to match the simulation domain                                                     
