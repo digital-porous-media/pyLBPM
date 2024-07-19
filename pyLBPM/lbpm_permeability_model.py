@@ -71,7 +71,7 @@ def launch_simulation(simulation_directory):
     """
     Launch the permeability simulation.
 
-    Parametrs:
+    Parameters:
         param simulation_directory: Directory where the simulation is to be run
         type simulation_directory: str
     
@@ -82,7 +82,7 @@ def launch_simulation(simulation_directory):
 def read_timelog(simulation_directory, plot_data=True):
     """
     Read and optionally plot data from the timelog of the simulation.
-    Parametrs:
+    Parameters:
         param simulation_directory: Directory where the simulation data is located
         type simulation_directory: str
         param plot_data: Whether to plot the data, defaults to True

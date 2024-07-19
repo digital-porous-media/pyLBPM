@@ -3,10 +3,7 @@ API
 
 .. autosummary::
    :toctree: generated
+   :template: custom-module-template.rst
+   :recursive:
 
-   pyLBPM.lbpm_color_model
-   pyLBPM.lbpm_domain
-   pyLBPM.lbpm_input_database
-   pyLBPM.lbpm_morphology
-   pyLBPM.lbpm_permeability_model
-   pyLBPM.lbpm_setup
+   pyLBPM
