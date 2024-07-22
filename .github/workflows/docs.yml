@@ -54,11 +54,13 @@ jobs:
           pip install sphinx pydata-sphinx-theme myst_nb sphinx-autodoc-typehints
       - name: Build HTML
         run: |
-          sphinx-build docs/source/ _build 
-          cd docs/ && make html
+          #sphinx-build docs/source/ _build 
+          cd docs && make html
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/_build/
-          force_orphan: true
+          publish_dir: ./docs/_build/html
+          #cname: porespy.org
+          #publish_dir: ./docs/_build/
+          #force_orphan: true
