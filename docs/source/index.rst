@@ -6,6 +6,7 @@ Welcome to pyLBPM's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   GettingStarted
    api
 
 
