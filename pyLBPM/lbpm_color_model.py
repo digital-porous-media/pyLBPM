@@ -16,12 +16,7 @@ class FlowAdaptor_db:
         min_steady_timesteps: int, minimum number of steady timesteps
         fractional_flow_increment: float, increment for fractional flow
         mass_fraction_factor: float, factor for mass fraction
-        endpoint_threshold: float, threshold for endpoint
-
-    This is a flow adapter description For each of the functions need a doc string 
-		Description of what the func does
-		Parameter & args
-		Returns 
+        endpoint_threshold: float, threshold for endpoint 
     """
     def __init__(self):
         """
@@ -170,8 +165,6 @@ class color_db:
         Parameters
             string: str, the protocol to set
 
-        Returns
-            None
         """
         self.useProtocol = False
         for option in self.protocols:
@@ -232,6 +225,9 @@ class color_db:
         return(LBPM_input_file)
 
     def save_config_file(self):
+        """
+        Saves the configuration to an input database file.
+        """
         LBPM_input_file=self.Dm.add_section("")
         LBPM_input_file=self.add_section(LBPM_input_file)
         LBPM_input_file=self.Visualization.add_section(LBPM_input_file)
@@ -241,9 +237,25 @@ class color_db:
         print(LBPM_input_file)        
 
 def launch_simulation(simulation_directory):
+    """
+    Launches the LBPM color model simulation.
+
+    Parameters
+        simulation_directory: str, the directory where the simulation will run
+    """
     success=subprocess.run(["bash", "run_lbpm_color.sh", simulation_directory])
 
 def read_timelog(simulation_directory, plot_data=True):
+    """
+    Reads the timelog from the simulation directory and optionally plots the data.
+
+    Parameters
+        simulation_directory: str, the directory containing the timelog file
+        plot_data: bool, flag to plot the data
+
+    Returns
+        pandas.DataFrame: The timelog data
+    """
     DATA=pd.read_csv(str(simulation_directory+"/timelog.csv"),sep=" ")
 
     if (plot_data):
@@ -256,6 +268,16 @@ def read_timelog(simulation_directory, plot_data=True):
     return DATA
 
 def read_subphase(simulation_directory, plot_data=True):
+    """
+    Reads the subphase data from the simulation directory and optionally plots the data.
+
+    Parameters
+        simulation_directory: str, the directory containing the subphase file
+        plot_data: bool, flag to plot the data
+
+    Returns
+        pandas.DataFrame: The subphase data
+    """
     DATA=pd.read_csv(str(simulation_directory+"/subphase.csv"),sep=" ")
 
     if (plot_data):
@@ -268,6 +290,17 @@ def read_subphase(simulation_directory, plot_data=True):
     return DATA
 
 def read_scal(simulation_directory, plot_data=True, permeability=1.0):
+    """
+    Reads the SCAL data from the simulation directory, scales it to the provided permeability, and optionally plots the data.
+
+    Parameters
+        simulation_directory: str, the directory containing the SCAL file
+        plot_data: bool, flag to plot the data
+        permeability: float, the permeability to scale the data to
+
+    Returns
+        pandas.DataFrame: The SCAL data
+    """
     SCAL=pd.read_csv(str(simulation_directory+"/SCAL.csv"),sep=" ")
 
     # Scale the curve to the permeability (if provided)

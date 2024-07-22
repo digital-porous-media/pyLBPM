@@ -84,6 +84,12 @@ class domain_db:
         
     # basic domain decomposition with process grid [px, py, pz]
     def decomp(self, process_layout):
+        """
+        Decomposes the simulation domain into sub-domains based on the provided process layout.
+
+        Parameters
+            process_layout: tuple of ints, the layout of processes (e.g., (nx, ny, nz))
+        """
         self.nproc = process_layout
         self.nx = np.int32(self.region[3] / self.nproc[0] )
         self.ny = np.int32(self.region[4] / self.nproc[1] )
@@ -92,6 +98,12 @@ class domain_db:
         print("Sub-domain size " + str([self.nx, self.ny, self.nz]))
 
     def view(self, slice): 
+        """
+        Decomposes the simulation domain into sub-domains based on the provided process layout.
+
+        Parameters
+            process_layout: tuple of ints, the layout of processes (e.g., (nx, ny, nz)) 
+        """
         plt.figure(1)
         plt.title('simulation domain')
         plt.pcolormesh(self.image[slice, :, :], cmap='hot')
@@ -100,6 +112,15 @@ class domain_db:
         plt.show()
 
     def add_section(self, LBPM_input_file):
+        """ 
+        Adds the domain parameters to the given LBPM input file string.
+
+        Parameters
+            LBPM_input_file: str, the LBPM input file content
+
+        Returns
+            str: The updated LBPM input file content with added domain parameters
+        """
         LBPM_input_file = "Domain {\n"
         LBPM_input_file += '   Filename = "'+str(self.name)+'"'+"\n"
         LBPM_input_file += '   ReadType ="8bit"'+"\n"

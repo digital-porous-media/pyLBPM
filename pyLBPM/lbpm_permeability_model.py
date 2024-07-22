@@ -74,8 +74,6 @@ def launch_simulation(simulation_directory):
     Parameters:
         param simulation_directory: Directory where the simulation is to be run
         type simulation_directory: str
-    
-    Returns: None
     """
     success=subprocess.run(["bash", "run_lbpm_permeability.sh", simulation_directory])
 

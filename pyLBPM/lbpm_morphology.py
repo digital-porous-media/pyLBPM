@@ -32,8 +32,6 @@ class morph_db:
     def save_config_file(self):
         """
         Save the configuration file for the domain.
-
-        :return: None
         """
         LBPM_input_file = "Domain {\n"
         LBPM_input_file += '   Filename = "'+str(self.Dm.name)+'"'+"\n"
@@ -59,9 +57,6 @@ def run_drainage(simulation_directory):
     Parameters:
         Directory where the simulation is to be run
         type simulation_directory: str
-
-    Returns: 
-        None
     """
     success=subprocess.run(["bash", "run_lbpm_morphdrain.sh", simulation_directory])
 
@@ -72,8 +67,6 @@ def run_opening(simulation_directory):
     Parameters:
         Directory where the simulation is to be run
         type simulation_directory: str
-    Returns: 
-        None
     """
     success=subprocess.run(["bash", "run_lbpm_morphopen.sh", simulation_directory])
 
