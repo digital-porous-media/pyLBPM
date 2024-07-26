@@ -21,8 +21,10 @@ copyright = '2024, Digital Porous Media'
 author = 'Digital Porous Media'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = ''
 
+# --Title---------------------------------------------------------------------
+html_title = "pyLBPM"
 
 # -- General configuration ---------------------------------------------------
 

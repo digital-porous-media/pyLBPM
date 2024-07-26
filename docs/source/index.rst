@@ -6,14 +6,5 @@ Welcome to pyLBPM's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   GettingStarted
+   GettingStarted/index
    api
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
