@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_input\_database.read\_input\_database
+==================================================
+
+.. currentmodule:: pyLBPM.lbpm_input_database
+
+.. autofunction:: read_input_database

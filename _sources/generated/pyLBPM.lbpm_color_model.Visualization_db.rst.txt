@@ -1,0 +1,26 @@
+pyLBPM.lbpm\_color\_model.Visualization\_db
+===========================================
+
+.. currentmodule:: pyLBPM.lbpm_color_model
+
+.. autoclass:: Visualization_db
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Visualization_db.__init__
+      ~Visualization_db.add_section
+   
+   
+
+   
+   
+   

@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_setup.download\_dependencies
+=========================================
+
+.. currentmodule:: pyLBPM.lbpm_setup
+
+.. autofunction:: download_dependencies

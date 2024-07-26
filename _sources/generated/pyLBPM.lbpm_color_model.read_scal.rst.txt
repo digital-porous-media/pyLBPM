@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_color\_model.read\_scal
+====================================
+
+.. currentmodule:: pyLBPM.lbpm_color_model
+
+.. autofunction:: read_scal

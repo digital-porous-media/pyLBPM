@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_morphology.read\_morphdrain
+========================================
+
+.. currentmodule:: pyLBPM.lbpm_morphology
+
+.. autofunction:: read_morphdrain

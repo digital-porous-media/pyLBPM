@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_setup.initialize
+=============================
+
+.. currentmodule:: pyLBPM.lbpm_setup
+
+.. autofunction:: initialize

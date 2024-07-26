@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_input\_database.create\_input\_database
+====================================================
+
+.. currentmodule:: pyLBPM.lbpm_input_database
+
+.. autofunction:: create_input_database

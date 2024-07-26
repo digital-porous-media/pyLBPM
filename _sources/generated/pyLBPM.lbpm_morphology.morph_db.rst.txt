@@ -1,0 +1,26 @@
+pyLBPM.lbpm\_morphology.morph\_db
+=================================
+
+.. currentmodule:: pyLBPM.lbpm_morphology
+
+.. autoclass:: morph_db
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~morph_db.__init__
+      ~morph_db.save_config_file
+   
+   
+
+   
+   
+   

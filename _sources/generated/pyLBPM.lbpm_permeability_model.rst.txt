@@ -1,0 +1,39 @@
+pyLBPM.lbpm\_permeability\_model
+================================
+
+.. automodule:: pyLBPM.lbpm_permeability_model
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      launch_simulation
+      read_timelog
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      permeability_db
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_input\_database.is\_float
+======================================
+
+.. currentmodule:: pyLBPM.lbpm_input_database
+
+.. autofunction:: is_float

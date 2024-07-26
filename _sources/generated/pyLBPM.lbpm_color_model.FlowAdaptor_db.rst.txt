@@ -1,0 +1,26 @@
+pyLBPM.lbpm\_color\_model.FlowAdaptor\_db
+=========================================
+
+.. currentmodule:: pyLBPM.lbpm_color_model
+
+.. autoclass:: FlowAdaptor_db
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~FlowAdaptor_db.__init__
+      ~FlowAdaptor_db.add_section
+   
+   
+
+   
+   
+   

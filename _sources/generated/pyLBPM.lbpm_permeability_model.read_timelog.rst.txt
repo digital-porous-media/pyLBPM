@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_permeability\_model.read\_timelog
+==============================================
+
+.. currentmodule:: pyLBPM.lbpm_permeability_model
+
+.. autofunction:: read_timelog

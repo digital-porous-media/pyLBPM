@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_color\_model.launch\_simulation
+============================================
+
+.. currentmodule:: pyLBPM.lbpm_color_model
+
+.. autofunction:: launch_simulation

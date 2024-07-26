@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_input\_database.lbpm\_input\_string\_from\_list
+============================================================
+
+.. currentmodule:: pyLBPM.lbpm_input_database
+
+.. autofunction:: lbpm_input_string_from_list

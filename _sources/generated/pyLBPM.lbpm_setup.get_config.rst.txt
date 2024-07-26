@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_setup.get\_config
+==============================
+
+.. currentmodule:: pyLBPM.lbpm_setup
+
+.. autofunction:: get_config

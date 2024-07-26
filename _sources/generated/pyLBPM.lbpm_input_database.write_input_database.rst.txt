@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_input\_database.write\_input\_database
+===================================================
+
+.. currentmodule:: pyLBPM.lbpm_input_database
+
+.. autofunction:: write_input_database

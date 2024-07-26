@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_input\_database.ExtractDatabaseSection
+===================================================
+
+.. currentmodule:: pyLBPM.lbpm_input_database
+
+.. autofunction:: ExtractDatabaseSection

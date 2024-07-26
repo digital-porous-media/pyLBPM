@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_permeability\_model.launch\_simulation
+===================================================
+
+.. currentmodule:: pyLBPM.lbpm_permeability_model
+
+.. autofunction:: launch_simulation

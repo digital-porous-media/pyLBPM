@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_morphology.run\_drainage
+=====================================
+
+.. currentmodule:: pyLBPM.lbpm_morphology
+
+.. autofunction:: run_drainage

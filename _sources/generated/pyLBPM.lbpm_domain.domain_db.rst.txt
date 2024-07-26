@@ -1,0 +1,30 @@
+pyLBPM.lbpm\_domain.domain\_db
+==============================
+
+.. currentmodule:: pyLBPM.lbpm_domain
+
+.. autoclass:: domain_db
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~domain_db.__init__
+      ~domain_db.add_section
+      ~domain_db.decomp
+      ~domain_db.relabel
+      ~domain_db.subregion
+      ~domain_db.view
+   
+   
+
+   
+   
+   

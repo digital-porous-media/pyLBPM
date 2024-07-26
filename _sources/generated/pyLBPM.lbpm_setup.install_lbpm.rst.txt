@@ -1,0 +1,6 @@
+pyLBPM.lbpm\_setup.install\_lbpm
+================================
+
+.. currentmodule:: pyLBPM.lbpm_setup
+
+.. autofunction:: install_lbpm

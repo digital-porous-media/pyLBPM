@@ -1,0 +1,26 @@
+pyLBPM.lbpm\_color\_model.Analysis\_db
+======================================
+
+.. currentmodule:: pyLBPM.lbpm_color_model
+
+.. autoclass:: Analysis_db
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Analysis_db.__init__
+      ~Analysis_db.add_section
+   
+   
+
+   
+   
+   
