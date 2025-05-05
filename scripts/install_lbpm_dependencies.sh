@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export GCC_VERSION="9.5.0"
 export MPI_VERSION="3.1.2"
 export HDF5_VERSION="1.14.3"
 
@@ -50,6 +51,39 @@ echo "Installing LBPM dependencies to " $INSTALL_DEP_PATH
 echo "Sources path: " $SRCDIR
 mkdir -p $SRCDIR
 cd $SRCDIR
+
+# Find GCC 9.x
+GCC_MODULE=$(module avail 2>&1 | grep -Eo 'gcc/9\.[0-9.]+' | sort -V | tail -1)
+
+if [[ -n "$GCC_MODULE" ]]; then
+    echo "GCC Module found: $GCC_MODULE"
+    module load $GCC_MODULE
+    export GCC_DIR=$(dirname $(dirname $(which gcc)))
+    export CC=$(which gcc)
+    export CXX=$(which g++)
+    echo "Using system GCC: $($CC --version | head -1)"
+    BUILD_GCC=false
+else
+    echo "No GCC 9.x module found - will build GCC $GCC_VERSION from source"
+    BUILD_GCC=true
+fi
+
+if [[ "$BUILD_GCC" == true ]]; then
+    export GCCSRC="gcc-$GCC_VERSION.tar.gz"
+    if [ -f "$GCCSRC" ]; then
+	echo "$GCCSRC already downloaded"
+    else
+	if [[ $DOWNLOAD == YES ]]; then
+	    GCC_LINK="https://ftp.gnu.org/gnu/gcc/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.gz"
+	    echo "$GCCSRC not present, downloading files from $GCC_LINK..."
+	    wget $GCC_LINK
+	    echo "       ...done"
+	else
+	    echo "$GCCSRC is not found! exiting"
+	    exit;
+	fi
+    fi
+fi  
 
 #export MPISRC="openmpi-4.1.6.tar.gz"
 export MPISRC="openmpi-$MPI_VERSION.tar.gz"
@@ -111,6 +145,7 @@ fi
 
 ls $SRCDIR
 
+export GCC_DIR=$DESTDIR/gcc/$GCC_VERSION
 export MPI_DIR=$DESTDIR/openmpi/$MPI_VERSION
 export LBPM_HDF5_DIR=$DESTDIR/hdf5/$HDF5_VERSION
 export PATH=$MPI_DIR/bin:$PATH
@@ -118,6 +153,7 @@ export LD_LIBRARY_PATH=$MPI_DIR/lib:$LBPM_HDF5_DIR/lib:$LD_LIBRARY_PATH
 export LBPM_ZLIB_DIR=$DESTDIR/zlib/1.3
 export LBPM_SZIP_DIR=$DESTDIR/szip/
 
+mkdir -p $GCC_DIR
 mkdir -p $MPI_DIR
 mkdir -p $LBPM_HDF5_DIR
 mkdir -p $LBPM_ZLIB_DIR
@@ -126,6 +162,25 @@ mkdir -p $LBPM_SZIP_DIR
 #export mode=0
 #if [ $mode == 1 ]; then
 
+cd $SRCDIR
+
+BUILD_GCC=true
+# Build and Install GCC 9.x
+if [[ ${BUILD_GCC} == true ]]; then
+    echo "Install GCC $GCC_VERSION to $GCC_DIR"
+    tar -xvzf gcc-$GCC_VERSION.tar.gz
+    cd gcc-$GCC_VERSION
+
+    # Download GCC dependencies
+    echo "Downloading GCC prerequisites"
+    ./contrib/download_prerequisites
+    echo "Configuring GCC $GCC_VERSION"
+    $SRCDIR/gcc-$GCC_VERSION/configure --prefix="$GCC_DIR" --enable-languages=c,c++ --disable-multilib --disable-bootstrap --enable-lto 
+
+    echo "Building GCC (this may take a while)..."
+    make -j$(nproc) && make install
+    
+fi
 cd $SRCDIR
 
 #try to auto-detect cuda
@@ -138,7 +193,7 @@ if [[ -f "${NVCC}" ]]; then
     GPU_NAME=$(nvidia-smi --query-gpu=gpu_name --format=csv,noheader | tail -1)
     GPU_COUNT=$(nvidia-smi --query-gpu=count --format=csv,noheader)
     echo "Found $GPU_COUNT $GPU_NAME"
-    if [[ $GPU_NAME == "NVIDIA A100-PCIE-40GB"  ]]; then
+    if [[ $GPU_NAME == *"A100"* || $GPU_NAME == *"GH200"*  ]]; then
         echo "  ... GPU version is supported will build with cuda support"
     else
         echo "  ... no supported NVIDIA GPU are found."
@@ -175,7 +230,7 @@ if [[ ${BUILD_MPI} == true ]]; then
        echo "Building openmpi with cuda support"
        NVCC=${CUDADIR}/bin/nvcc
        echo "CUDA compiler location: $NVCC"
-       ./configure --with-cuda=${CUDADIR} --enable-mpi-thread-multiple --prefix=${MPI_DIR}
+       ./configure --with-cc=${GCC_DIR}/bin/gcc --with-cxx=${GCC_DIR}/bin/g++ --with-fc=${GCC_DIR}/bin/gfortran --with-cuda=${CUDADIR} --enable-mpi-thread-multiple --prefix=${MPI_DIR}
    else
    echo "Building openmpi without GPU support"
    ./configure --enable-mpi-thread-multiple --prefix=$MPI_DIR
@@ -245,11 +300,13 @@ if [[ -f $NVCC ]]; then
 else
     echo 'export mode="cpu"' >> $LBPM_CONFIG_DIR/config.sh
 fi
+echo "export GCC9=$GCC_DIR" >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPICC=$MPI_DIR/bin/mpicc"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPICXX=$MPI_DIR/bin/mpicxx"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export MPI_DIR=$MPI_DIR"  >> $LBPM_CONFIG_DIR/config.sh
 echo "export LBPM_HDF5_DIR=$LBPM_HDF5_DIR"  >> $LBPM_CONFIG_DIR/config.sh
-echo "export LD_LIBRARY_PATH=$MPI_DIR/lib:$LBPM_HDF5_DIR/lib:$LD_LIBRARY_PATH" >> $LBPM_CONFIG_DIR/config.sh
+echo "export LD_LIBRARY_PATH=$GCC_DIR/lib64:$MPI_DIR/lib:$LBPM_HDF5_DIR/lib:$LD_LIBRARY_PATH" >> $LBPM_CONFIG_DIR/config.sh
+echo "export PATH=$GCC_DIR/bin:$PATH" >> $LBPM_CONFIG_DIR/config.sh
 echo "export PATH=$MPI_DIR/bin:$PATH" >> $LBPM_CONFIG_DIR/config.sh
 
 exit;

@@ -5,7 +5,11 @@ export SOURCE_DIR=$HOME/.pyLBPM/src
 #if [[ -z "${LBPM_CONFIG_DIR}" ]]; then
 source ~/.pyLBPM/config.sh
 #fi
-      
+
+export GCC9_DIR=$GCC9
+export PATH=$GCC9_DIR/bin:$PATH
+export LD_LIBRARY_PATH=$GCC9_DIR/lib64:$LD_LIBRARY_PATH
+
 if [[ -z "${LBPM_INSTALL_ROOT_DIR}" ]]; then
    export LBPM_INSTALL_ROOT_DIR=$HOME/local
 fi
@@ -20,6 +24,7 @@ if [[ $mode == "nvidia" ]]; then
     echo "       GPU COMPILER PATH"
     echo "           NVCC: $NVCC"
 fi
+echo "       GCC_DIR: $GCC9_DIR"
 echo "       MPI_DIR: $MPI_DIR"
 echo "       LBPM_HDF5_DIR: $LBPM_HDF5_DIR"
 echo "       LBPM_INSTALL_ROOT_DIR: $LBPM_INSTALL_ROOT_DIR"
@@ -50,7 +55,7 @@ if [[ $mode == "nvidia" ]]; then
          --mca btl_openib_cuda_async_recv false --mca btl_smcuda_use_cuda_ipc 0 \
          --mca btl_openib_allow_ib true --mca btl_openib_cuda_rdma_limit 1000 -x LD_LIBRARY_PATH"
 
-    export CUDA_HOST_COMPILER=`which gcc`
+    export CUDA_HOST_COMPILER="$GCC9_DIR/bin/gcc"
     rm -rf CMake*
     cmake                                    \
 	-D CMAKE_C_COMPILER:PATH=$MPICC          \
@@ -61,7 +66,7 @@ if [[ $mode == "nvidia" ]]; then
 	-D USE_EXT_MPI_FOR_SERIAL_TESTS:BOOL=TRUE \
 	-D CMAKE_BUILD_TYPE:STRING=Release     \
 	-D USE_CUDA=1			   \
-           -D CMAKE_CUDA_FLAGS="-arch sm_80 -Xptxas=-v -Xptxas -dlcm=cg -lineinfo" \
+           -D CMAKE_CUDA_FLAGS="-arch sm_89 -Xptxas=-v -Xptxas -dlcm=cg -lineinfo" \
            -D CMAKE_CUDA_HOST_COMPILER=$CUDA_HOST_COMPILER \
         -D USE_HDF5=1				   \
            -D HDF5_DIRECTORY="$LBPM_HDF5_DIR"		   \
@@ -89,7 +94,7 @@ else
 	 $LBPM_SOURCE_DIR
 fi
 
-make -j  VERBOSE=1 && make install
+make -j $(nproc) VERBOSE=1 && make install
 
 mkdir -p ${LBPM_CONFIG_DIR}
 echo '#!/bin/bash' > $LBPM_CONFIG_DIR/config.sh
