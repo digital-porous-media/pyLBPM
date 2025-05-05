@@ -3,7 +3,7 @@
 ## A python-based management interface for the LBPM software
 
 ## Installation
-To install pyLBPM with pip (note python installs scripts to `$HOME/.local/.bin`)
+To install pyLBPM with pip (note Python installs scripts to `$HOME/.local/.bin`)
 
 ```
 git clone git@github.com:digital-porous-media/pyLBPM.git
@@ -12,14 +12,36 @@ pip install ./
 export PATH=$HOME/.local/bin:$PATH
 ```
 
-To download LBPM dependencies, launch a python command prompt and run the following from the python command line
+⚠️ Note
+It is best to run the following lines from nodes with access to a GPU. On Texas Advanced Computing Center (TACC) systems, this can be done using an interactive development session. The total installation time takes 1-2 hours.
+<details>
+<summary>Accessing idev on TACC Vista</summary>
+
+```bash
+idev -p gh-dev -t 2:00:00
+module load gcc cuda python3
+```
+</details> 
+
+<details> 
+<summary>Accessing idev on TACC Lonestar6</summary>
+ 
+```bash
+idev -p gpu-a100-small -t 2:00:00
+module load gcc/9.4.0 cuda
+```
+</details>
+
+To download LBPM dependencies, launch a Python command prompt and run the following from the Python command line.
 
 ```
 from pyLBPM import lbpm_setup
 lbpm_install_path="~/local"
 lbpm_config_setup=lbpm_setup.download_dependencies(lbpm_install_path)
 lbpm_config_setup=lbpm_setup.install_dependencies(lbpm_install_path)
+
 ```
+
 
 To install LBPM from the python command line
 ```
