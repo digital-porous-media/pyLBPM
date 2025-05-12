@@ -164,11 +164,17 @@ mkdir -p $LBPM_SZIP_DIR
 
 cd $SRCDIR
 
-BUILD_GCC=true
+export BUILD_GCC=true
 # Build and Install GCC 9.x
+if [[ $INSTALL == NO || $INSTALL == No || $INSTALL == no ]]; then
+    BUILD_GCC=false
+fi
+
 if [[ ${BUILD_GCC} == true ]]; then
     echo "Install GCC $GCC_VERSION to $GCC_DIR"
-    tar -xvzf gcc-$GCC_VERSION.tar.gz
+    total_files=$(tar -tzf gcc-$GCC_VERSION.tar.gz | wc -l)
+    tar --use-compress-program=pigz -xf gcc-$GCC_VERSION.tar.gz --checkpoint=1000 --checkpoint-action='.'
+    echo -e "\nExtraction complete!"
     cd gcc-$GCC_VERSION
 
     # Download GCC dependencies
@@ -217,7 +223,7 @@ if [[ ${OMPI_VERSION} == "Open MPI v$MPI_VERSION" ]]; then
     echo "Located existing Open MPI. Trying the version installed at $MPI_DIR"
 fi
 
-if [[ $INSTALL = NO || $INSTALL = No || $INSTALL = no ]]; then
+if [[ $INSTALL == NO || $INSTALL == No || $INSTALL == no ]]; then
     BUILD_MPI=false
 fi
 
@@ -232,8 +238,8 @@ if [[ ${BUILD_MPI} == true ]]; then
        echo "CUDA compiler location: $NVCC"
        ./configure --with-cc=${GCC_DIR}/bin/gcc --with-cxx=${GCC_DIR}/bin/g++ --with-fc=${GCC_DIR}/bin/gfortran --with-cuda=${CUDADIR} --enable-mpi-thread-multiple --prefix=${MPI_DIR}
    else
-   echo "Building openmpi without GPU support"
-   ./configure --enable-mpi-thread-multiple --prefix=$MPI_DIR
+   	echo "Building openmpi without GPU support"
+   	./configure --enable-mpi-thread-multiple --prefix=$MPI_DIR
    fi
    # build & install openmpi
    make && make install
@@ -255,7 +261,7 @@ if [[ -f "${LBPM_HDF5_DIR}/bin/h5pcc" ]]; then
     fi
 fi
 
-if [[ $INSTALL = NO || $INSTALL = No || $INSTALL = no ]]; then
+if [[ $INSTALL == NO || $INSTALL == No || $INSTALL == no ]]; then
     BUILD_HDF5=false
 fi
 
