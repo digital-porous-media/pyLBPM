@@ -63,6 +63,7 @@ if [[ -n "$GCC_MODULE" ]]; then
     export CXX=$(which g++)
     echo "Using system GCC: $($CC --version | head -1)"
     BUILD_GCC=false
+    GCC_VERSION=$(gcc --version | head -n1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?')
 else
     echo "No GCC 9.x module found - will build GCC $GCC_VERSION from source"
     BUILD_GCC=true
@@ -145,7 +146,7 @@ fi
 
 ls $SRCDIR
 
-export GCC_DIR=$DESTDIR/gcc/$GCC_VERSION
+#export GCC_DIR=$DESTDIR/gcc/$GCC_VERSION
 export MPI_DIR=$DESTDIR/openmpi/$MPI_VERSION
 export LBPM_HDF5_DIR=$DESTDIR/hdf5/$HDF5_VERSION
 export PATH=$MPI_DIR/bin:$PATH
@@ -153,7 +154,7 @@ export LD_LIBRARY_PATH=$MPI_DIR/lib:$LBPM_HDF5_DIR/lib:$LD_LIBRARY_PATH
 export LBPM_ZLIB_DIR=$DESTDIR/zlib/1.3
 export LBPM_SZIP_DIR=$DESTDIR/szip/
 
-mkdir -p $GCC_DIR
+#mkdir -p $GCC_DIR
 mkdir -p $MPI_DIR
 mkdir -p $LBPM_HDF5_DIR
 mkdir -p $LBPM_ZLIB_DIR
@@ -164,14 +165,22 @@ mkdir -p $LBPM_SZIP_DIR
 
 cd $SRCDIR
 
-export BUILD_GCC=true
 # Build and Install GCC 9.x
 if [[ $INSTALL == NO || $INSTALL == No || $INSTALL == no ]]; then
     BUILD_GCC=false
 fi
+# Check if GCC is already installed in the file location
+if [ -x $DESTDIR/gcc/$GCC_VERSION/bin/gcc ]; then
+  echo "GCC has already been installed... skipping."
+  BUILD_GCC=false
+  export PATH=$DESTDIR/gcc/$GCC_VERSION/bin:$PATH
+fi
 
 if [[ ${BUILD_GCC} == true ]]; then
+    export GCC_DIR=$DESTDIR/gcc/$GCC_VERSION
+    mkdir -p $GCC_DIR
     echo "Install GCC $GCC_VERSION to $GCC_DIR"
+    echo "Extracting tar file..."
     total_files=$(tar -tzf gcc-$GCC_VERSION.tar.gz | wc -l)
     tar --use-compress-program=pigz -xf gcc-$GCC_VERSION.tar.gz --checkpoint=1000 --checkpoint-action='.'
     echo -e "\nExtraction complete!"
@@ -185,7 +194,8 @@ if [[ ${BUILD_GCC} == true ]]; then
 
     echo "Building GCC (this may take a while)..."
     make -j$(nproc) && make install
-    
+else
+    export GCC_DIR=$(dirname $(dirname $(which gcc)))
 fi
 cd $SRCDIR
 
@@ -215,15 +225,22 @@ export BUILD_MPI=true
 # check for open mpi
 export MPICC=`which mpicc`
 export OMPI_INFO=`which ompi_info`
-export OMPI_VERSION=$($OMPI_INFO --version | head -1 )
+if [[ -n "$OMPI_INFO" ]]; then
+    export OMPI_VERSION=$($OMPI_INFO --version | head -1)
+fi
 
-if [[ ${OMPI_VERSION} == "Open MPI v$MPI_VERSION" ]]; then
+if [[ -n "$OMPI_VERSION" && ${OMPI_VERSION} == "Open MPI v$MPI_VERSION" ]]; then
     export MPI_DIR=$(echo $OMPI_INFO | sed 's|/bin/ompi_info||g')
     export BUILD_MPI=false
     echo "Located existing Open MPI. Trying the version installed at $MPI_DIR"
 fi
 
 if [[ $INSTALL == NO || $INSTALL == No || $INSTALL == no ]]; then
+    BUILD_MPI=false
+fi
+
+if [ -x $DESTDIR/openmpi/$MPI_VERSION/bin/mpicc ]; then
+    echo "OpenMPI has already been installed. Skipping..."
     BUILD_MPI=false
 fi
 
