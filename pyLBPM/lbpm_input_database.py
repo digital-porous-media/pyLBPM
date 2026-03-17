@@ -97,3 +97,16 @@ def read_database(simulation_directory):
     input_db.close()
     # print(input)
     return(input)
+
+
+def get_database_section_names( File ):
+    File = re.sub('//.*?\n','\n', File)  # strip C/C++ style comments
+    section_start_idx = [s.start() for s in re.finditer(r'\{', File)]
+    section_end_idx = [s.start() for s in re.finditer(r'\}', File)]
+    section_end_idx.insert(0, -1)
+    section_end_idx.pop(-1)
+    section_names = [File[s_end+1:s_start] for s_end, s_start in zip(section_end_idx, section_start_idx)]
+    section_names = [s.strip() for s in section_names]
+
+    return section_names
+

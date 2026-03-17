@@ -111,6 +111,7 @@ def render_3d_vis(simulation_dir: pathlib.Path, timesteps: list[int], VTK_VIS_ID
                                 # cubeAxesStyle={"axisLabels": ["", "", ""]},
                                 ),
                 ],
+
                 background=[1, 1, 1],
                 cameraPosition=[1, 1, 1],
             )
@@ -153,7 +154,7 @@ def _get_volume(image_volume: np.ndarray, **kwargs) -> dash_vtk.GeometryRepresen
     # # phase_contour = vol_obj.contour(isosurfaces=[0.1])
     #
     # vol_state = to_volume_state(vol_obj)
-    print(image_volume)
+    # print(image_volume)
 
     geom = dash_vtk.VolumeDataRepresentation(
         spacing=[1, 1, 1],
