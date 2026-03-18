@@ -81,7 +81,6 @@ Pages are in `pyLBPM/dashboard/setup_pages/`:
 |-------|------|------|-------------|
 | 0 | Geometry Setup | `geometry_setup.py` | Load geometry, set dimensions, flow direction, domain/model params, create sim dir |
 | 1 | Input Configuration | `input_config_preview.py` | Syntax-highlighted view + manual edit of `input.db` |
-| 2 | Morphological Pre-Analysis | `morphdrain.py` | View/trigger morphological drainage analysis |
 
 ### Analysis Dashboard (`lbpm_dashboard.py`)
 Pages are in `pyLBPM/dashboard/pages/`:

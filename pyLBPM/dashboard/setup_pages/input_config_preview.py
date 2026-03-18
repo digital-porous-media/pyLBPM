@@ -10,12 +10,12 @@ from dash import Input, Output, State, callback, dcc, html
 
 from pyLBPM.dashboard import ids
 
-dash.register_page(__name__, name="Input Configuration", order=1, path="/input-config")
+dash.register_page(__name__, name="Review Input Configuration", order=1, path="/input-config")
 
 layout = dbc.Container(
     fluid=True,
     children=[
-        html.H1("Input Configuration"),
+        html.H1("Review Input Configuration"),
         html.Hr(),
         dbc.Row([
             dbc.Col([
@@ -34,23 +34,22 @@ layout = dbc.Container(
             dbc.Col([
                 dbc.Label("\u00a0"),
                 dbc.Button("Edit", id="config-edit-btn",
-                           color="secondary", className="d-block", disabled=True),
+                           color="light", className="d-block", disabled=True),
             ], width=2),
         ], className="mb-3"),
 
         html.Div(id="config-status"),
         html.Hr(),
 
-        # Read-only markdown display
+        # Read-only markdown display (hidden while editing)
         html.Div(
             id="config-display",
             children=html.P("Load a simulation directory to view input.db.",
                             className="text-muted"),
         ),
 
-        # Edit textarea (hidden until Edit is clicked)
+        # Edit panel (replaces display while editing)
         html.Div(id="config-edit-panel", style={"display": "none"}, children=[
-            html.H5("Manual Edit"),
             dbc.Textarea(
                 id="config-edit-textarea",
                 style={"height": "500px", "fontFamily": "monospace", "fontSize": "13px"},
@@ -114,7 +113,8 @@ def load_config(n_clicks, sim_dir):
 
 
 @callback(
-    Output("config-edit-panel", "style"),
+    Output("config-edit-panel", "style", allow_duplicate=True),
+    Output("config-display", "style", allow_duplicate=True),
     Output("config-edit-textarea", "value"),
     Input("config-edit-btn", "n_clicks"),
     Input("config-cancel-btn", "n_clicks"),
@@ -124,14 +124,16 @@ def load_config(n_clicks, sim_dir):
 def toggle_edit(edit_clicks, cancel_clicks, stored_text):
     triggered = dash.callback_context.triggered[0]["prop_id"]
     if "config-cancel-btn" in triggered:
-        return {"display": "none"}, ""
-    return {}, stored_text or ""
+        return {"display": "none"}, {}, ""
+    return {}, {"display": "none"}, stored_text or ""
 
 
 @callback(
     Output("config-save-status", "children"),
     Output("config-store", "data", allow_duplicate=True),
     Output("config-display", "children", allow_duplicate=True),
+    Output("config-edit-panel", "style", allow_duplicate=True),
+    Output("config-display", "style", allow_duplicate=True),
     Input("config-save-btn", "n_clicks"),
     State("config-edit-textarea", "value"),
     State("config-sim-dir", "value"),
@@ -139,7 +141,7 @@ def toggle_edit(edit_clicks, cancel_clicks, stored_text):
 )
 def save_config(n_clicks, text, sim_dir):
     if not sim_dir or not text:
-        return dbc.Alert("Nothing to save.", color="warning"), dash.no_update, dash.no_update
+        return dbc.Alert("Nothing to save.", color="warning"), dash.no_update, dash.no_update, dash.no_update, dash.no_update
     import posixpath
     db_path = posixpath.join(sim_dir.rstrip("/"), "input.db")
     try:
@@ -148,6 +150,6 @@ def save_config(n_clicks, text, sim_dir):
         fs.write_file(db_path, text.encode("utf-8"))
         display = dcc.Markdown(f"```\n{text}\n```",
                                style={"fontFamily": "monospace", "fontSize": "13px"})
-        return dbc.Alert("Saved successfully.", color="success"), text, display
+        return dbc.Alert("Saved successfully.", color="success"), text, display, {"display": "none"}, {}
     except Exception as e:
-        return dbc.Alert(f"Save failed: {e}", color="danger"), dash.no_update, dash.no_update
+        return dbc.Alert(f"Save failed: {e}", color="danger"), dash.no_update, dash.no_update, dash.no_update, dash.no_update

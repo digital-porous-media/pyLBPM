@@ -10,8 +10,10 @@ Or directly:
 import sys
 import dash
 import dash_bootstrap_components as dbc
-from dash import Dash, html
+from dash import Dash, dcc, html
 from dash_bootstrap_components.themes import BOOTSTRAP
+
+from pyLBPM.dashboard import ids
 
 
 def main() -> None:
@@ -86,6 +88,10 @@ def main() -> None:
                     dbc.Col([dash.page_container], xs=8, sm=8, md=10, lg=10, xl=10, xxl=10),
                 ]
             ),
+
+            # Session-scoped stores — persist across page navigation within a browser session
+            dcc.Store(id=ids.GEOMETRY_SESSION_STORE, storage_type="session"),
+            dcc.Store(id=ids.GEOMETRY_ARRAY_STORE, storage_type="memory"),
         ],
         fluid=True,
     )
