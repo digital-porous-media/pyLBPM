@@ -1,0 +1,20 @@
+/* Fix VTK.js UI control text visibility */
+.js-vtk-widget-root select,
+.js-vtk-widget-root option,
+.vtkjs-renderer select,
+.vtkjs-renderer option,
+[role="combobox"] select,
+[role="combobox"] option {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+}
+
+/* Ensure text in dropdowns is readable */
+select {
+    color: #212529 !important;
+}
+
+option {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+}

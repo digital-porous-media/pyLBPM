@@ -4,8 +4,6 @@ Displays morphological drainage results (morphdrain.csv) and a geometry
 slice viewer loaded from the simulation directory.
 """
 
-import base64
-
 import dash
 import dash_bootstrap_components as dbc
 import numpy as np
@@ -30,6 +28,7 @@ def _empty_fig(msg="No data"):
 
 layout = dbc.Container(
     fluid=True,
+    style={"marginTop": "20px"},
     children=[
         html.H1("Pre-Simulation Analysis"),
         html.Hr(),
@@ -47,57 +46,66 @@ layout = dbc.Container(
         dbc.Row([
             # Geometry slice viewer
             dbc.Col([
-                html.H5("Geometry Slice"),
-                dbc.Row([
-                    dbc.Col([
-                        dbc.Label("Axis"),
-                        dbc.Select(
-                            id=ids.PRESIM_SLICE_AXIS,
-                            options=[
-                                {"label": "X (dim 0)", "value": "0"},
-                                {"label": "Y (dim 1)", "value": "1"},
-                                {"label": "Z (dim 2, fastest)", "value": "2"},
-                            ],
-                            value="2",
+                dbc.Card(
+                    dbc.CardBody([
+                        html.H5("Geometry Slice", className="mb-3"),
+                        dbc.Row([
+                            dbc.Col([
+                                dbc.Label("Axis"),
+                                dbc.Select(
+                                    id=ids.PRESIM_SLICE_AXIS,
+                                    options=[
+                                        {"label": "X (dim 0)", "value": "0"},
+                                        {"label": "Y (dim 1)", "value": "1"},
+                                        {"label": "Z (dim 2)", "value": "2"},
+                                    ],
+                                    value="2",
+                                ),
+                            ], width=4),
+                            dbc.Col([
+                                dbc.Label("Slice index"),
+                                dcc.Slider(
+                                    id=ids.PRESIM_SLICE_INDEX,
+                                    min=0, max=1, step=1, value=0, marks=None,
+                                    tooltip={"placement": "bottom", "always_visible": True},
+                                ),
+                            ], width=8, style={"paddingBottom": "20px"}),
+                        ], className="mb-4"),
+                        dcc.Graph(
+                            id=ids.IMAGE_SLICE,
+                            figure=_empty_fig("Loading geometry…"),
+                            style={"height": "380px"},
                         ),
-                    ], width=4),
-                    dbc.Col([
-                        dbc.Label("Slice index"),
-                        dcc.Slider(
-                            id=ids.PRESIM_SLICE_INDEX,
-                            min=0, max=1, step=1, value=0, marks=None,
-                            tooltip={"placement": "bottom", "always_visible": True},
-                        ),
-                    ], width=8),
-                ], className="mb-2"),
-                dcc.Graph(
-                    id=ids.IMAGE_SLICE,
-                    figure=_empty_fig("Loading geometry…"),
-                    style={"height": "380px"},
+                    ]),
+                    className="h-100"
                 ),
-                dcc.Store(id=ids.PRESIM_GEOMETRY_STORE),
-            ], width=6),
+            ], width=6, className="mb-3"),
 
             # Morphdrain chart
             dbc.Col([
-                html.H5("Drainage Analysis"),
-                dbc.Row([
-                    dbc.Col([
-                        dbc.Label("X axis"),
-                        dbc.Select(id=ids.PRESIM_X_COL, value=""),
-                    ], width=6),
-                    dbc.Col([
-                        dbc.Label("Y axis"),
-                        dbc.Select(id=ids.PRESIM_Y_COL, value=""),
-                    ], width=6),
-                ], className="mb-2"),
-                dcc.Graph(
-                    id=ids.MORPHDRAIN_LINE_CHART,
-                    figure=_empty_fig("Loading morphdrain.csv…"),
-                    style={"height": "380px"},
+                dbc.Card(
+                    dbc.CardBody([
+                        html.H5("Drainage Analysis", className="mb-3"),
+                        dbc.Row([
+                            dbc.Col([
+                                dbc.Label("X axis"),
+                                dbc.Select(id=ids.PRESIM_X_COL, value=""),
+                            ], width=6),
+                            dbc.Col([
+                                dbc.Label("Y axis"),
+                                dbc.Select(id=ids.PRESIM_Y_COL, value=""),
+                            ], width=6),
+                        ], className="mb-3"),
+                        dcc.Graph(
+                            id=ids.MORPHDRAIN_LINE_CHART,
+                            figure=_empty_fig("Loading morphdrain.csv…"),
+                            style={"height": "380px"},
+                        ),
+                        dcc.Store(id=ids.PRESIM_CSV_STORE),
+                    ]),
+                    className="h-100"
                 ),
-                dcc.Store(id=ids.PRESIM_CSV_STORE),
-            ], width=6),
+            ], width=6, className="mb-3"),
         ]),
 
         # Hidden trigger to load data on page load
@@ -113,13 +121,12 @@ layout = dbc.Container(
     Output(ids.PRESIM_X_COL, "value"),
     Output(ids.PRESIM_Y_COL, "options"),
     Output(ids.PRESIM_Y_COL, "value"),
-    Output(ids.PRESIM_GEOMETRY_STORE, "data"),
     Output(ids.PRESIM_SLICE_INDEX, "max"),
     Output(ids.PRESIM_SLICE_INDEX, "value"),
     Input("presim-location", "pathname"),
 )
 def load_data(_pathname):
-    """Load morphdrain.csv and geometry .raw on page load."""
+    """Load morphdrain.csv and verify geometry .raw exists on page load."""
     import io
     import posixpath
 
@@ -132,7 +139,6 @@ def load_data(_pathname):
     csv_data = None
     cols = []
     x_val = y_val = ""
-    geo_store = None
     slice_max = 1
     slice_val = 0
 
@@ -152,20 +158,20 @@ def load_data(_pathname):
     except Exception as e:
         errors.append(f"morphdrain.csv: {e}")
 
-    # Load geometry .morphdrain.raw
+    # Check geometry .morphdrain.raw (just verify existence and infer dimensions)
     try:
         files = fs.list_dir(sim_dir_str)
         raw_files = [f for f in files if f.endswith(".morphdrain.raw")]
         if raw_files:
             raw_path = posixpath.join(sim_dir_str.rstrip("/"), raw_files[0])
             raw_bytes = fs.read_file(raw_path)
-            geo_store = {"b64": base64.b64encode(raw_bytes).decode(), "filename": raw_files[0]}
             n3 = len(raw_bytes)
             n = round(n3 ** (1 / 3))
             if n ** 3 == n3:
-                geo_store["nx"] = geo_store["ny"] = geo_store["nz"] = n
                 slice_max = n - 1
                 slice_val = n // 2
+            else:
+                errors.append(f"Geometry is not cubic: {n3} bytes.")
         else:
             errors.append("No *.morphdrain.raw file found.")
     except Exception as e:
@@ -177,7 +183,7 @@ def load_data(_pathname):
     else:
         status = dbc.Alert("Pre-simulation data loaded successfully.", color="success")
 
-    return status, csv_data, cols, x_val, cols, y_val, geo_store, slice_max, slice_val
+    return status, csv_data, cols, x_val, cols, y_val, slice_max, slice_val
 
 
 @callback(
@@ -203,31 +209,52 @@ def update_chart(x_col, y_col, records):
     Output(ids.IMAGE_SLICE, "figure"),
     Input(ids.PRESIM_SLICE_AXIS, "value"),
     Input(ids.PRESIM_SLICE_INDEX, "value"),
-    State(ids.PRESIM_GEOMETRY_STORE, "data"),
     prevent_initial_call=True,
 )
-def update_slice(axis_str, slice_idx, geo_store):
-    if not geo_store or "nx" not in geo_store:
-        return _empty_fig("Load geometry to view slices")
-    axis = int(axis_str)
-    nx = geo_store["nx"]
-    ny = geo_store.get("ny", nx)
-    nz = geo_store.get("nz", nx)
-    raw_bytes = base64.b64decode(geo_store["b64"])
-    arr = np.frombuffer(raw_bytes, dtype=np.uint8).reshape(nx, ny, nz)
-    axis_labels = ["X (dim 0)", "Y (dim 1)", "Z (dim 2, fastest)"]
-    if axis == 0:
-        s = arr[slice_idx, :, :]
-        xl, yl = "Y", "Z"
-    elif axis == 1:
-        s = arr[:, slice_idx, :]
-        xl, yl = "X", "Z"
-    else:
-        s = arr[:, :, slice_idx]
-        xl, yl = "X", "Y"
-    fig = px.imshow(s, color_continuous_scale="gray",
-                    labels={"x": xl, "y": yl, "color": "label"},
-                    title=f"Slice along {axis_labels[axis]} = {slice_idx}",
-                    aspect="equal")
-    fig.update_layout(margin=dict(l=40, r=10, t=40, b=30))
-    return fig
+def update_slice(axis_str, slice_idx):
+    """Update geometry slice by reading file directly from filesystem."""
+    import posixpath
+    from pyLBPM.filesystem import get_filesystem
+
+    try:
+        # Find the .morphdrain.raw file
+        fs = get_filesystem()
+        sim_dir_str = str(sim_dir).replace("\\", "/")
+        files = fs.list_dir(sim_dir_str)
+        raw_files = [f for f in files if f.endswith(".morphdrain.raw")]
+
+        if not raw_files:
+            return _empty_fig("No geometry file found")
+
+        raw_path = posixpath.join(sim_dir_str.rstrip("/"), raw_files[0])
+        raw_bytes = fs.read_file(raw_path)
+
+        # Infer dimensions from file size (assume cubic)
+        n3 = len(raw_bytes)
+        n = round(n3 ** (1 / 3))
+        if n ** 3 != n3:
+            return _empty_fig(f"Geometry not cubic: {n3} bytes")
+
+        # Reshape array
+        arr = np.frombuffer(raw_bytes, dtype=np.uint8).reshape(n, n, n)
+        axis = int(axis_str)
+
+        axis_labels = ["X (dim 0)", "Y (dim 1)", "Z (dim 2)"]
+        if axis == 0:
+            s = arr[slice_idx, :, :]
+            xl, yl = "Y", "Z"
+        elif axis == 1:
+            s = arr[:, slice_idx, :]
+            xl, yl = "X", "Z"
+        else:
+            s = arr[:, :, slice_idx]
+            xl, yl = "X", "Y"
+
+        fig = px.imshow(s, color_continuous_scale="gray",
+                        labels={"x": xl, "y": yl, "color": "label"},
+                        title=f"Slice along {axis_labels[axis]} = {slice_idx}",
+                        aspect="equal")
+        fig.update_layout(margin=dict(l=40, r=10, t=40, b=30))
+        return fig
+    except Exception as e:
+        return _empty_fig(f"Error loading geometry: {e}")

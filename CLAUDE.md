@@ -47,6 +47,44 @@ python -m pyLBPM.lbpm_dashboard --sim-dir /path/to/simulation
 
 ---
 
+## Development Environment
+
+### Setup
+
+This project uses a conda environment for dependency management. To activate the environment:
+
+```bash
+conda activate pylbpm
+```
+
+If the environment doesn't exist, create it from the environment file (if present) or install dependencies manually:
+
+```bash
+conda create -n pylbpm python=3.10
+conda activate pylbpm
+pip install -r requirements.txt
+```
+
+### Running Tests and Code
+
+When running Python code (including tests, scripts, and the Claude Code integration), **always activate the pylbpm conda environment first**:
+
+```bash
+# Run tests
+conda activate pylbpm
+pytest tests/
+
+# Run the analysis dashboard
+conda activate pylbpm
+python -m pyLBPM.lbpm_dashboard --sim-dir /path/to/simulation
+
+# Run the setup dashboard
+conda activate pylbpm
+python -m pyLBPM.lbpm_setup_dashboard
+```
+
+---
+
 ## File Format Conventions
 
 | Extension | Format | Usage |
@@ -100,30 +138,17 @@ Pages are in `pyLBPM/dashboard/pages/`:
 
 All file I/O uses a backend-agnostic `HPCFilesystem` interface (`pyLBPM/filesystem/`).
 
-Available backends (implemented in `pyLBPM/filesystem/`):
-- `local` — wraps `pathlib.Path` (default for development); `local.py`
-- `sftp` — SSH/SFTP via `paramiko` (for direct TACC access); `sftp.py`
-- `tapis` — Tapis v3 Files API via `tapipy` *(planned, not yet implemented)*
-- `globus` — Globus SDK (best for large file transfers) *(planned, not yet implemented)*
+**Current implementation**: Simplified to **local filesystem only** (wraps `pathlib.Path`).
 
-Backend is configured in `~/.pyLBPM/config.yml`:
-```yaml
-filesystem:
-  backend: local   # local | sftp | tapis | globus
+All page modules use `get_filesystem()` to read data:
+```python
+from pyLBPM.filesystem import get_filesystem
 
-  # SFTP options:
-  host: login1.tacc.utexas.edu
-  username: myuser
-  key_file: ~/.ssh/id_rsa
-
-  # Tapis options:
-  base_url: https://tacc.tapis.io
-  tenant: tacc
-  token: <your-token>
-
-  # Globus options:
-  source_endpoint: <your-globus-endpoint-id>
+fs = get_filesystem()
+csv_bytes = fs.read_file(csv_path)
 ```
+
+This abstraction makes it straightforward to add remote backends (SFTP, Tapis, Globus) in the future without changing page code.
 
 ---
 
@@ -174,6 +199,82 @@ restart_file = "Restart"
 - **Page modules**: register with `dash.register_page(__name__, ...)` at the top of each page file
 - **Component IDs**: all IDs are string constants in `pyLBPM/dashboard/ids.py` — never hardcode strings in callbacks
 - **Filesystem calls**: always use `HPCFilesystem` methods, never call `open()` / `pathlib` directly in page code
+
+---
+
+## Analysis Dashboard — Refactoring (March 2026)
+
+### What was done
+The analysis dashboard underwent a complete refactoring to simplify complexity and improve performance:
+
+**1. Removed authentication backends**
+- Deleted `pyLBPM/filesystem/sftp.py` (SFTP/paramiko)
+- Simplified `pyLBPM/filesystem/__init__.py` to always return `LocalFilesystem`
+- Dashboard now works with local file paths only
+
+**2. Fixed callback conflicts**
+- Added page-specific component IDs to `pyLBPM/dashboard/ids.py`:
+  - Monitor: `MONITOR_X_VAR`, `MONITOR_Y_VAR`, `MONITOR_INTERVAL`
+  - Subphase: `SUBPHASE_X_VAR`, `SUBPHASE_Y_VAR`
+  - SCAL: `SCAL_X_VAR`, `SCAL_Y_VAR`
+  - 3D Vis: `VIS_3D_DATA_KEY`, `VIS_3D_SUBDOMAIN`, `VIS_3D_TIMESTEP`, `VIS_3D_DOWNSAMPLE`
+- All legacy pages previously shared `X_VAR_DROPDOWN`, `Y_VAR_DROPDOWN`, causing Dash callback collisions
+
+**3. Migrated legacy pages to callback-based pattern**
+- `monitor.py`, `subphase_analysis.py`, `SCAL.py`: Rewrote from import-time dataloader calls to callback-based pattern
+- All pages now:
+  - Load data on page visit via `dcc.Location` trigger
+  - Read files via `get_filesystem()` (not raw `pathlib`)
+  - Store CSV in `dcc.Store`
+  - Update charts when dropdown selections change
+- Monitor page added real-time polling via `dcc.Interval` (5s interval) for live simulation tracking
+
+**4. Performance improvements**
+- **Presimulation page**: Removed `PRESIM_GEOMETRY_STORE` which was base64-encoding and storing entire `.morphdrain.raw` files (up to 22 MB) in browser memory. Now reads geometry on-demand from disk when slider moves.
+- **3D Visualization page**: Added startup error handling to prevent crashes when no `vis*` directories exist; shows graceful empty state instead.
+
+**5. Removed dead code**
+- Deleted `pyLBPM/dashboard/pages/pyvista_dash.py` (unregistered prototype)
+- Removed unused layout functions: `create_presim_layout()`, `create_linechart_layout()`
+- Removed unused plotter functions: `render_morphdrain_linechart()`, `render_slice()`, `render_linechart()`
+
+### Pattern to follow for new pages
+```python
+from dash import dcc, Input, Output, callback, html
+from pyLBPM.filesystem import get_filesystem
+from pyLBPM.dashboard import ids
+
+# Page layout
+layout = dbc.Container([
+    dcc.Location(id="page-location", refresh=False),  # trigger on page load
+    dcc.Store(id=ids.YOUR_CSV_STORE),  # store CSV data
+    html.Div(id="your-controls"),  # dropdowns etc.
+    dcc.Graph(id="your-chart"),
+])
+
+@callback(
+    Output(ids.YOUR_CSV_STORE, "data"),
+    Output(ids.YOUR_DROPDOWN, "options"),
+    Input("page-location", "pathname"),
+)
+def load_data(_pathname):
+    fs = get_filesystem()
+    csv_bytes = fs.read_file(csv_path)
+    df = pd.read_csv(pd.io.common.StringIO(csv_bytes.decode("utf-8")), sep=r"\s+")
+    return df.to_dict("records"), [{"label": col, "value": col} for col in df.columns]
+
+@callback(
+    Output("your-chart", "figure"),
+    Input(ids.YOUR_DROPDOWN, "value"),
+    State(ids.YOUR_CSV_STORE, "data"),
+    prevent_initial_call=True,
+)
+def update_chart(x_col, records):
+    if not records or not x_col:
+        return px.line(title="Select data to plot")
+    df = pd.DataFrame(records)
+    return px.line(df, y=x_col)
+```
 
 ---
 

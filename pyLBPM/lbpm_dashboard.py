@@ -1,10 +1,11 @@
 import sys
 
 sys.path.append("..")
-from dash import Dash, html
+from dash import Dash, html, dcc
 import dash
 import dash_bootstrap_components as dbc
 from dash_bootstrap_components.themes import BOOTSTRAP
+from pyLBPM.dashboard import ids
 
 
 def main() -> None:
@@ -24,10 +25,12 @@ def main() -> None:
         ],
         vertical=True,
         pills=True,
-        className="bg-light"
+        className="p-2",
+        style={"backgroundColor": "#f1f3f5", "borderRight": "1px solid #dee2e6"}
     )
 
     app.layout = dbc.Container([
+        dcc.Store(id=ids.APP_INPUT_FILE_PATH, storage_type="session"),
         dbc.Row([
             dbc.Col(html.Div()),
             dbc.Col(html.Div("LBPM Simulation Dashboard",
@@ -57,9 +60,7 @@ def main() -> None:
             )
             ),
         ], justify="end", align="center", style={"background-color": "#222222", "color": "#EEEEEE"},
-        ),
-
-        html.Hr(),
+        className="py-2 px-3"),
 
         dbc.Row(
             [
@@ -76,7 +77,7 @@ def main() -> None:
         )
     ], fluid=True)
 
-    app.run(debug=False)
+    app.run(debug=True)
 
     return
 

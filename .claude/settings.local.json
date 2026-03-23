@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"create_linechart_layout\\\\|create_3D_vis_layout\\\\|create_filenotfound_layout\\\\|create_presim_layout\" c:/Users/bchan/Documents/pyLBPM/pyLBPM/dashboard/pages/*.py)",
+      "Bash(ls -la /c/Users/bchan/Documents/pyLBPM/*.yml /c/Users/bchan/Documents/pyLBPM/*.yaml /c/Users/bchan/Documents/pyLBPM/requirements*)"
+    ]
+  }
+}

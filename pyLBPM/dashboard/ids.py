@@ -106,14 +106,47 @@ PRESIM_Y_COL = "presim-y-col"
 PRESIM_GEOMETRY_STORE = "presim-geometry-store"
 PRESIM_CSV_STORE = "presim-csv-store"
 
+# --- Analysis dashboard: monitor page ---
+MONITOR_X_VAR = "monitor-x-var"
+MONITOR_Y_VAR = "monitor-y-var"
+MONITOR_CSV_STORE = "monitor-csv-store"
+MONITOR_INTERVAL = "monitor-interval"
+MONITOR_CSV_FILE = "monitor-csv-file"
+MONITOR_REFRESH_BTN = "monitor-refresh-btn"
+
+# --- Analysis dashboard: subphase analysis page ---
+SUBPHASE_X_VAR = "subphase-x-var"
+SUBPHASE_Y_VAR = "subphase-y-var"
+SUBPHASE_CSV_STORE = "subphase-csv-store"
+SUBPHASE_INTERVAL = "subphase-interval"
+SUBPHASE_REFRESH_BTN = "subphase-refresh-btn"
+
+# --- Analysis dashboard: SCAL analysis page ---
+SCAL_X_VAR = "scal-x-var"
+SCAL_Y_VAR = "scal-y-var"
+SCAL_CSV_STORE = "scal-csv-store"
+SCAL_INTERVAL = "scal-interval"
+SCAL_REFRESH_BTN = "scal-refresh-btn"
+
+# --- Analysis dashboard: 3D visualization page ---
+VIS_3D_DATA_KEY = "vis-3d-data-key"
+VIS_3D_SUBDOMAIN = "vis-3d-subdomain"
+VIS_3D_TIMESTEP = "vis-3d-timestep"
+VIS_3D_DOWNSAMPLE = "vis-3d-downsample"
+VIS_3D_INPUT_PATH = "vis-3d-input-path"
+VIS_3D_REFRESH_BTN = "vis-3d-refresh-btn"
+VIS_3D_REFRESH_INTERVAL = "vis-3d-refresh-interval"
+VIS_3D_FILE_STORE = "vis-3d-file-store"
+VIS_3D_RENDER_BTN = "vis-3d-render-btn"
+VIS_3D_DISCOVER_BTN = "vis-3d-discover-btn"
+TOOLTIP_VIS_DOWNSAMPLE = "tooltip-vis-downsample"
+
 # --- Analysis dashboard: input file page ---
 ANALYSIS_INPUT_DB_CONTENT = "analysis-input-db-content"
 ANALYSIS_INPUT_DB_STORE = "analysis-input-db-store"
-ANALYSIS_INPUT_EDIT_BTN = "analysis-input-edit-btn"
-ANALYSIS_INPUT_SAVE_BTN = "analysis-input-save-btn"
-ANALYSIS_INPUT_TEXTAREA = "analysis-input-textarea"
-ANALYSIS_INPUT_EDIT_SECTION = "analysis-input-edit-section"
 ANALYSIS_INPUT_STATUS = "analysis-input-status"
+ANALYSIS_INPUT_LOAD_BTN = "analysis-input-load-btn"
+APP_INPUT_FILE_PATH = "app-input-file-path"
 
 # --- Tooltip targets: geometry page (Load Geometry) ---
 TOOLTIP_NX = "tooltip-nx"

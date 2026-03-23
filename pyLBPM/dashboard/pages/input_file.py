@@ -1,12 +1,11 @@
 """Input Configuration page for the analysis dashboard.
 
-Displays the input.db from the simulation directory with syntax highlighting
-and allows manual editing and saving.
+Displays the input.db from the simulation directory with syntax highlighting.
 """
 
 import dash
 import dash_bootstrap_components as dbc
-from dash import Input, Output, State, callback, dcc, html
+from dash import Input, Output, callback, dcc, html, State
 
 from pyLBPM.dashboard import dataloader, ids
 
@@ -16,16 +15,32 @@ sim_dir = dataloader.get_sim_dir()
 
 layout = dbc.Container(
     fluid=True,
+    style={"marginTop": "20px"},
     children=[
         html.H1("Input Configuration"),
         html.Hr(),
+
+        # Input file name and load button
         dbc.Row([
             dbc.Col([
-                dbc.Button("Edit", id=ids.ANALYSIS_INPUT_EDIT_BTN,
-                           color="secondary", className="me-2", disabled=True),
-                dbc.Button("Save changes", id=ids.ANALYSIS_INPUT_SAVE_BTN,
-                           color="success", style={"display": "none"}),
-            ], width="auto"),
+                dbc.Label("Input file name:"),
+                dbc.Input(
+                    id=ids.VIS_3D_INPUT_PATH,
+                    type="text",
+                    placeholder="input.db",
+                    debounce=True,
+                    className="form-control",
+                ),
+            ], xs=10),
+            dbc.Col([
+                dbc.Button(
+                    "Load",
+                    id=ids.ANALYSIS_INPUT_LOAD_BTN,
+                    color="secondary",
+                    className="mt-4",
+                    size="sm",
+                ),
+            ], xs=2, className="d-flex align-items-end"),
         ], className="mb-3"),
 
         html.Div(id=ids.ANALYSIS_INPUT_STATUS),
@@ -37,17 +52,6 @@ layout = dbc.Container(
             children=html.P("Loading input.db…", className="text-muted"),
         ),
 
-        # Edit textarea (hidden until Edit is clicked)
-        html.Div(id=ids.ANALYSIS_INPUT_EDIT_SECTION, style={"display": "none"}, children=[
-            html.H5("Manual Edit"),
-            dbc.Textarea(
-                id=ids.ANALYSIS_INPUT_TEXTAREA,
-                style={"height": "500px", "fontFamily": "monospace", "fontSize": "13px"},
-            ),
-            dbc.Button("Cancel", id="analysis-input-cancel-btn",
-                       color="secondary", className="mt-2"),
-        ]),
-
         # Store for raw text content
         dcc.Store(id=ids.ANALYSIS_INPUT_DB_STORE),
 
@@ -58,77 +62,69 @@ layout = dbc.Container(
 
 
 @callback(
+    Output(ids.VIS_3D_INPUT_PATH, "value"),
+    Input("input-file-location", "pathname"),
+    State(ids.APP_INPUT_FILE_PATH, "data"),
+)
+def set_default_input_path(_pathname, stored_path):
+    """Restore previously entered filename, or fall back to default."""
+    if stored_path:
+        return stored_path
+    return "input.db"
+
+
+@callback(
+    Output(ids.APP_INPUT_FILE_PATH, "data"),
+    Input(ids.VIS_3D_INPUT_PATH, "value"),
+    prevent_initial_call=True,
+)
+def save_input_path(path):
+    """Save the input path to app-level store when user changes it."""
+    return path
+
+
+@callback(
     Output(ids.ANALYSIS_INPUT_DB_CONTENT, "children"),
     Output(ids.ANALYSIS_INPUT_DB_STORE, "data"),
     Output(ids.ANALYSIS_INPUT_STATUS, "children"),
-    Output(ids.ANALYSIS_INPUT_EDIT_BTN, "disabled"),
     Input("input-file-location", "pathname"),
+    Input(ids.ANALYSIS_INPUT_LOAD_BTN, "n_clicks"),
+    State(ids.VIS_3D_INPUT_PATH, "value"),
+    State(ids.APP_INPUT_FILE_PATH, "data"),
 )
-def load_config(_pathname):
-    import posixpath
+def load_config(_pathname, _load_clicks, input_file_path, stored_path):
     from pyLBPM.filesystem import get_filesystem
+    from pathlib import Path
 
-    sim_dir_str = str(sim_dir).replace("\\", "/")
-    db_path = posixpath.join(sim_dir_str.rstrip("/"), "input.db")
+    # Treat input_file_path as a filename, construct full path from sim_dir
+    filename = stored_path or input_file_path or "input.db"
+    db_path = str(sim_dir / filename)
+
     try:
         fs = get_filesystem()
         raw = fs.read_file(db_path).decode("utf-8")
         display = dcc.Markdown(f"```\n{raw}\n```",
                                style={"fontFamily": "monospace", "fontSize": "13px"})
-        return display, raw, dbc.Alert(f"Loaded: {db_path}", color="success"), False
+        return display, raw, dbc.Alert(f"Loaded: {db_path}", color="success")
     except FileNotFoundError:
         return (
-            html.P("input.db not found in the simulation directory.", className="text-muted"),
+            html.P(
+                f"File not found: {db_path}. "
+                "This dashboard looks for 'input.db' by default, but your input file may have a "
+                "different name. Enter the correct filename (and full path) in the field above.",
+                className="text-muted",
+            ),
             None,
-            dbc.Alert(f"File not found: {db_path}", color="danger"),
-            True,
+            dbc.Alert(
+                f"File not found: {db_path}. "
+                "This dashboard looks for 'input.db' by default — update the path above "
+                "if your input file has a different name.",
+                color="danger",
+            ),
         )
     except Exception as e:
         return (
             html.P(str(e), className="text-danger"),
             None,
             dbc.Alert(f"Error loading input.db: {e}", color="danger"),
-            True,
         )
-
-
-@callback(
-    Output(ids.ANALYSIS_INPUT_EDIT_SECTION, "style"),
-    Output(ids.ANALYSIS_INPUT_TEXTAREA, "value"),
-    Output(ids.ANALYSIS_INPUT_SAVE_BTN, "style"),
-    Input(ids.ANALYSIS_INPUT_EDIT_BTN, "n_clicks"),
-    Input("analysis-input-cancel-btn", "n_clicks"),
-    State(ids.ANALYSIS_INPUT_DB_STORE, "data"),
-    prevent_initial_call=True,
-)
-def toggle_edit(_edit, _cancel, stored_text):
-    triggered = dash.callback_context.triggered[0]["prop_id"]
-    if "cancel" in triggered:
-        return {"display": "none"}, "", {"display": "none"}
-    return {}, stored_text or "", {}
-
-
-@callback(
-    Output(ids.ANALYSIS_INPUT_STATUS, "children", allow_duplicate=True),
-    Output(ids.ANALYSIS_INPUT_DB_STORE, "data", allow_duplicate=True),
-    Output(ids.ANALYSIS_INPUT_DB_CONTENT, "children", allow_duplicate=True),
-    Input(ids.ANALYSIS_INPUT_SAVE_BTN, "n_clicks"),
-    State(ids.ANALYSIS_INPUT_TEXTAREA, "value"),
-    prevent_initial_call=True,
-)
-def save_config(_clicks, text):
-    if not text:
-        return dbc.Alert("Nothing to save.", color="warning"), dash.no_update, dash.no_update
-    import posixpath
-    from pyLBPM.filesystem import get_filesystem
-
-    sim_dir_str = str(sim_dir).replace("\\", "/")
-    db_path = posixpath.join(sim_dir_str.rstrip("/"), "input.db")
-    try:
-        fs = get_filesystem()
-        fs.write_file(db_path, text.encode("utf-8"))
-        display = dcc.Markdown(f"```\n{text}\n```",
-                               style={"fontFamily": "monospace", "fontSize": "13px"})
-        return dbc.Alert("Saved successfully.", color="success"), text, display
-    except Exception as e:
-        return dbc.Alert(f"Save failed: {e}", color="danger"), dash.no_update, dash.no_update

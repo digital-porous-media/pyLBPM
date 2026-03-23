@@ -73,10 +73,43 @@ def _wrap_numpy_to_vtk(img):
 
 def get_sim_dir() -> Path:
     parser = argparse.ArgumentParser(description="The LBPM Dashboard is a tool for monitoring and analyzing your LBPM simulations. https://github.com/JamesEMcClure/pyLBPM")
-    parser.add_argument("--sim_dir", type=str, help="Path to the simulation directory")
+    parser.add_argument("--sim-dir", type=str, help="Path to the simulation directory", dest="sim_dir")
     args = parser.parse_args()
     sim_dir = Path(fr"{args.sim_dir}")
     return sim_dir
+
+
+def get_domain_dims(input_db_path: Path, input_filename: str = "input.db") -> tuple[int, int, int]:
+    """Extract full domain dimensions from input database file.
+
+    Calculates dimensions as: full_domain = n * nproc (component-wise)
+    where n is the local domain size per process and nproc is the number of processes.
+
+    :param input_db_path: Path to the directory containing the input database file
+    :param input_filename: Name of the input database file (default: "input.db")
+    :return: Tuple of (nx, ny, nz) full domain dimensions
+    """
+    if isinstance(input_db_path, str):
+        input_db_path = Path(input_db_path)
+
+    # Read the database file
+    db = read_input_database(str(input_db_path / input_filename))
+    domain_db = get_section(db, "Domain")
+
+    # Parse n vector (local domain size per process)
+    n_str = str(domain_db.n).strip()
+    n_values = [int(float(x.strip())) for x in n_str.split(',')]
+
+    # Parse nproc vector (number of processes)
+    nproc_str = str(domain_db.nproc).strip()
+    nproc_values = [int(float(x.strip())) for x in nproc_str.split(',')]
+
+    # Calculate full domain dimensions (n * nproc)
+    nx = n_values[0] * nproc_values[0]
+    ny = n_values[1] * nproc_values[1]
+    nz = n_values[2] * nproc_values[2]
+
+    return nx, ny, nz
 
 
 def get_vis_fields(simulation_file: Path) -> list[str]:
@@ -132,24 +165,34 @@ def _get_grid_size(domains: list) -> Tuple[np.ndarray, float, float, float]:
     :param domains: List of domain names
     :return: Tuple of the range indices and size of each subdomain
     """
-    domain_ranges: np.ndarray = np.array([list(domain["range"]) for domain in domains], dtype=np.float64)
+    domain_ranges: np.ndarray = np.atleast_2d(
+        np.array([list(domain["range"]) for domain in domains], dtype=np.float64)
+    )
     nx, ny, nz = domain_ranges[:, 1].max(), domain_ranges[:, 3].max(), domain_ranges[:, -1].max()
     return domain_ranges, nx, ny, nz
 
 
-def h5_reader(simulation_dir: Path, data_key: str, subdomain_num: list[str]=['all']) -> Dict:
+def h5_reader(simulation_dir: Path, data_key: str, subdomain_num: list[str]=['all'],
+              input_db_path: Path | None = None, input_filename: str = "input.db") -> Dict:
     """ Get the fields from each h5 file.
 
     :param simulation_dir: Path to the parent directory containing .xmf and .h5 visualization files
-    :param data_key: Data key to read. Defaults to vz.
+    :param data_key: Data key to read.
     :param subdomain_num: Name of subdomain file to read. Defaults to 'all' but this may not scale well
     for large simulations.
-    :param voxel_length: Voxel length in microns/voxel. Defaults to 1.00.
+    :param input_db_path: Path to directory containing input database file. If None, defaults to simulation_dir.parent.
+    :param input_filename: Name of the input database file (default: "input.db")
     :return: Dictionary of h5 fields as keys and their corresponding images.
     """
 
     # Read in the input database and extract the domain section
-    db = read_input_database(simulation_dir.parent / "input.db")
+    if input_db_path is None:
+        input_db_path = simulation_dir.parent
+
+    # Construct full file path
+    if isinstance(input_db_path, str):
+        input_db_path = Path(input_db_path)
+    db = read_input_database(str(input_db_path / input_filename))
     domain_db = get_section(db, "Domain")
     voxel_length = domain_db.voxel_length
 
@@ -187,6 +230,7 @@ def h5_reader(simulation_dir: Path, data_key: str, subdomain_num: list[str]=['al
     image = np.zeros((int(nx / voxel_length),
                       int(ny / voxel_length),
                       int(nz / voxel_length)), dtype="<f8")
+
     for domain, r in zip(domains, domain_ranges):
 
         rr = np.array(r / voxel_length, dtype=np.uint64)
@@ -196,9 +240,9 @@ def h5_reader(simulation_dir: Path, data_key: str, subdomain_num: list[str]=['al
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    images = h5_reader(Path("C:/Users/bchan/Documents/lbpm_results/beadpack_test_vis/vis2000"),
-              data_key='all', subdomain_num='all')
+    images = h5_reader(Path("C:/Users/bchan/Documents/lbpm_results/lbpm-benchmark/single_phase_perm_150_150_150/vis8000"),
+              data_key='Velocity_y', subdomain_num='all')
 
-    plt.imshow(images['Velocity_z'][100, :, :], cmap='inferno')
+    plt.imshow(images[:, :, 100], cmap='inferno')
     plt.colorbar()
     plt.show()
