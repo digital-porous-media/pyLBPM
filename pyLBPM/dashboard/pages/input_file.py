@@ -19,42 +19,46 @@ layout = dbc.Container(
     children=[
         html.H1("Input Configuration"),
         html.Hr(),
-
         # Input file name and load button
-        dbc.Row([
-            dbc.Col([
-                dbc.Label("Input file name:"),
-                dbc.Input(
-                    id=ids.VIS_3D_INPUT_PATH,
-                    type="text",
-                    placeholder="input.db",
-                    debounce=True,
-                    className="form-control",
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dbc.Label("Input file name:"),
+                        dbc.Input(
+                            id=ids.VIS_3D_INPUT_PATH,
+                            type="text",
+                            placeholder="input.db",
+                            debounce=True,
+                            className="form-control",
+                        ),
+                    ],
+                    xs=10,
                 ),
-            ], xs=10),
-            dbc.Col([
-                dbc.Button(
-                    "Load",
-                    id=ids.ANALYSIS_INPUT_LOAD_BTN,
-                    color="secondary",
-                    className="mt-4",
-                    size="sm",
+                dbc.Col(
+                    [
+                        dbc.Button(
+                            "Load",
+                            id=ids.ANALYSIS_INPUT_LOAD_BTN,
+                            color="success",
+                            className="mt-4",
+                        ),
+                    ],
+                    xs=2,
+                    className="d-flex align-items-end",
                 ),
-            ], xs=2, className="d-flex align-items-end"),
-        ], className="mb-3"),
-
+            ],
+            className="mb-3",
+        ),
         html.Div(id=ids.ANALYSIS_INPUT_STATUS),
         html.Hr(),
-
         # Read-only markdown display
         html.Div(
             id=ids.ANALYSIS_INPUT_DB_CONTENT,
             children=html.P("Loading input.db…", className="text-muted"),
         ),
-
         # Store for raw text content
         dcc.Store(id=ids.ANALYSIS_INPUT_DB_STORE),
-
         # Trigger auto-load on page visit
         dcc.Location(id="input-file-location", refresh=False),
     ],
@@ -103,8 +107,9 @@ def load_config(_pathname, _load_clicks, input_file_path, stored_path):
     try:
         fs = get_filesystem()
         raw = fs.read_file(db_path).decode("utf-8")
-        display = dcc.Markdown(f"```\n{raw}\n```",
-                               style={"fontFamily": "monospace", "fontSize": "13px"})
+        display = dcc.Markdown(
+            f"```\n{raw}\n```", style={"fontFamily": "monospace", "fontSize": "13px"}
+        )
         return display, raw, dbc.Alert(f"Loaded: {db_path}", color="success")
     except FileNotFoundError:
         return (

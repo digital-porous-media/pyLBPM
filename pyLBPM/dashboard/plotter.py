@@ -17,7 +17,8 @@ def render_phase_isosurfaces(image_volume: np.ndarray) -> dash_vtk.View:
     """Render phase field as two isosurfaces (solid/NWP and NWP/WP boundaries)."""
     nx, ny, nz = image_volume.shape
     cx, cy, cz = nx / 2, ny / 2, nz / 2
-    dist = max(nx, ny, nz) * 3 / (3 ** 0.5)
+    dist = max(nx, ny, nz) * 2.0
+
     return dash_vtk.View(
         children=[
             _get_mesh(
@@ -37,8 +38,8 @@ def render_phase_isosurfaces(image_volume: np.ndarray) -> dash_vtk.View:
             ),
         ],
         background=[1, 1, 1],
-        cameraPosition=[cx + dist, cy + dist, cz + dist],
-        cameraViewUp=[0, 0, 1],
+        cameraPosition=[cx, cy, cz + dist],
+        cameraViewUp=[0, 1, 0],
     )
 
 
@@ -46,15 +47,17 @@ def render_volume(image_volume: np.ndarray) -> dash_vtk.View:
     """Render data as a volume."""
     nx, ny, nz = image_volume.shape
     cx, cy, cz = nx / 2, ny / 2, nz / 2
-    dist = max(nx, ny, nz) * 3 / (3 ** 0.5)
+    dist = max(nx, ny, nz) * 2.0
+
     return dash_vtk.View(
         children=[
             _get_volume(image_volume=image_volume),
         ],
         background=[1, 1, 1],
-        cameraPosition=[cx + dist, cy + dist, cz + dist],
-        cameraViewUp=[0, 0, 1],
+        cameraPosition=[cx, cy, cz + dist],
+        cameraViewUp=[0, 1, 0],
     )
+
 
 
 def _get_mesh(image_volume: np.ndarray, iso_value: float, add_padding=False, **kwargs) -> dash_vtk.GeometryRepresentation:
@@ -84,6 +87,7 @@ def _get_volume(image_volume: np.ndarray, **kwargs) -> dash_vtk.GeometryRepresen
         origin=[0, 0, 0],
         scalars=image_volume.flatten(order="F"),
         rescaleColorMap=False,
+        colorMapPreset="Cool to Warm",
         **kwargs
     )
 

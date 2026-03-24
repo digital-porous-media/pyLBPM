@@ -10,7 +10,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import Input, Output, State, callback, dcc, html
 
-from pyLBPM.dashboard import dataloader, ids
+from pyLBPM.dashboard import dataloader, ids, script_export
 
 dash.register_page(__name__, name="Monitor Simulations", order=2)
 
@@ -20,7 +20,14 @@ layout = dbc.Container(
     fluid=True,
     style={"marginTop": "20px"},
     children=[
-        html.H1(id="monitor-heading", children="Timelog Monitoring"),
+        # Header row with title and Load button
+        dbc.Row([
+            dbc.Col([html.H1(id="monitor-heading", children="Timelog Monitoring")], xs=9),
+            dbc.Col([
+                dbc.Button("Load Latest Results", id=ids.MONITOR_REFRESH_BTN, color="success",
+                           size="sm", className="w-100"),
+            ], xs=3),
+        ], className="mb-2", align="center"),
         html.Hr(),
 
         # Real-time polling interval
@@ -46,12 +53,12 @@ layout = dbc.Container(
                 dbc.Row([
                     dbc.Col([
                         dbc.Label("X-axis:"),
-                        dbc.Select(
+                        dcc.Dropdown(
                             id=ids.MONITOR_X_VAR,
                             options=[],
                             value=None,
                         ),
-                    ], xs=5),
+                    ], xs=6),
                     dbc.Col([
                         dbc.Label("Y-axis (select one or more):"),
                         dcc.Dropdown(
@@ -60,16 +67,20 @@ layout = dbc.Container(
                             value=[],
                             multi=True,
                         ),
-                    ], xs=5),
-                    dbc.Col([
-                        dbc.Button("Load Latest Results", id=ids.MONITOR_REFRESH_BTN, color="success",
-                                   size="sm", className="w-100"),
-                    ], xs=2, className="d-flex align-items-end"),
+                    ], xs=6),
                 ], align="end"),
                 html.Div(id="monitor-status", className="mt-2"),
             ]),
             className="mb-3",
         ),
+
+        # Export button on its own row
+        dbc.Row([
+            dbc.Col([
+                dbc.Button("Export Visualization Script", id=ids.MONITOR_EXPORT_BTN, color="outline-primary",
+                           size="sm"),
+            ], xs=3),
+        ], className="mb-2"),
 
         # Chart container
         dbc.Card(
@@ -86,6 +97,31 @@ layout = dbc.Container(
 
         # Store for CSV data
         dcc.Store(id=ids.MONITOR_CSV_STORE),
+
+        # Download component and modal for export
+        dcc.Download(id=ids.MONITOR_DOWNLOAD),
+        dbc.Modal([
+            dbc.ModalHeader("Export Monitor Script"),
+            dbc.ModalBody([
+                dbc.Label("Backend:"),
+                dbc.RadioItems(
+                    id=ids.MONITOR_EXPORT_BACKEND,
+                    options=[
+                        {"label": "Matplotlib", "value": "matplotlib"},
+                        {"label": "Plotly", "value": "plotly"},
+                    ],
+                    value="matplotlib",
+                    inline=True,
+                    className="mb-3",
+                ),
+                dbc.Label("Filename:"),
+                dbc.Input(id=ids.MONITOR_EXPORT_FILENAME, value="monitor_plot.py", type="text"),
+            ]),
+            dbc.ModalFooter([
+                dbc.Button("Save", id=ids.MONITOR_EXPORT_CONFIRM, color="primary"),
+                dbc.Button("Cancel", id=ids.MONITOR_EXPORT_CANCEL, color="secondary"),
+            ]),
+        ], id=ids.MONITOR_EXPORT_MODAL),
 
         # Trigger load on page visit
         dcc.Location(id="monitor-location", refresh=False),
@@ -175,3 +211,41 @@ def update_chart(x_var, y_vars, csv_data):
         return fig
     except Exception as e:
         return px.line(title=f"Error: {e}")
+
+
+@callback(
+    Output(ids.MONITOR_EXPORT_MODAL, "is_open"),
+    Input(ids.MONITOR_EXPORT_BTN, "n_clicks"),
+    Input(ids.MONITOR_EXPORT_CONFIRM, "n_clicks"),
+    Input(ids.MONITOR_EXPORT_CANCEL, "n_clicks"),
+    State(ids.MONITOR_EXPORT_MODAL, "is_open"),
+    prevent_initial_call=True,
+)
+def toggle_export_modal(export_clicks, confirm_clicks, cancel_clicks, is_open):
+    """Toggle export modal visibility."""
+    if export_clicks or cancel_clicks:
+        return not is_open
+    return is_open
+
+
+@callback(
+    Output(ids.MONITOR_DOWNLOAD, "data"),
+    Input(ids.MONITOR_EXPORT_CONFIRM, "n_clicks"),
+    State(ids.MONITOR_X_VAR, "value"),
+    State(ids.MONITOR_Y_VAR, "value"),
+    State(ids.MONITOR_EXPORT_FILENAME, "value"),
+    State(ids.MONITOR_CSV_FILE, "value"),
+    State(ids.MONITOR_EXPORT_BACKEND, "value"),
+    prevent_initial_call=True,
+)
+def generate_script(n_clicks, x_var, y_vars, filename, csv_file, backend):
+    """Generate and download the monitor script."""
+    if not n_clicks or not x_var or not y_vars or not filename:
+        return None
+
+    if backend == "matplotlib":
+        script_content = script_export.monitor_script_matplotlib(str(sim_dir), x_var, y_vars)
+    else:
+        script_content = script_export.monitor_script(str(sim_dir), x_var, y_vars)
+
+    return dict(content=script_content, filename=filename)

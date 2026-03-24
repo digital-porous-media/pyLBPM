@@ -126,11 +126,12 @@ Pages are in `pyLBPM/dashboard/pages/`:
 | Order | Page | File | Required Files |
 |-------|------|------|----------------|
 | 0 | Input Configuration | `input_file.py` | `input.db` |
-| 1 | Pre-Simulation | `presimulation.py` | `morphdrain.csv`, `*.morphdrain.raw` |
+| 1 | Morphological Drainage | `morphological_drainage.py` | `morphdrain.csv`, `*.morphdrain.raw` |
 | 2 | Monitor | `monitor.py` | `timelog.csv` |
 | 3 | Subphase Analysis | `subphase_analysis.py` | `subphase.csv` |
 | 4 | SCAL Analysis | `SCAL.py` | `SCAL.csv` |
-| 5 | 3D Visualization | `3D_visualization.py` | `vis*/summary.xmf`, `*.h5` |
+| 5 | 2D Slice Visualization | `2D_visualization.py` | `vis*/summary.xmf`, `*.h5`, `id_t*.raw` |
+| 6 | 3D Visualization | `3D_visualization.py` | `vis*/summary.xmf`, `*.h5`, `id_t*.raw` |
 
 ---
 
@@ -199,6 +200,7 @@ restart_file = "Restart"
 - **Page modules**: register with `dash.register_page(__name__, ...)` at the top of each page file
 - **Component IDs**: all IDs are string constants in `pyLBPM/dashboard/ids.py` — never hardcode strings in callbacks
 - **Filesystem calls**: always use `HPCFilesystem` methods, never call `open()` / `pathlib` directly in page code
+- **Button colors**: Avoid `color='secondary'` for action buttons — gray buttons appear disabled to users. Use `color='success'` for primary data-loading actions ("Load", "Scan"), `color='primary'` for render/update actions, and `color='outline-primary'` for secondary actions (Export, Download).
 
 ---
 
@@ -217,6 +219,7 @@ The analysis dashboard underwent a complete refactoring to simplify complexity a
   - Monitor: `MONITOR_X_VAR`, `MONITOR_Y_VAR`, `MONITOR_INTERVAL`
   - Subphase: `SUBPHASE_X_VAR`, `SUBPHASE_Y_VAR`
   - SCAL: `SCAL_X_VAR`, `SCAL_Y_VAR`
+  - 2D Vis: `VIS_2D_DATA_KEY`, `VIS_2D_AXIS`, `VIS_2D_SLICE_INDEX`, `VIS_2D_TIMESTEP`, `VIS_2D_DOWNSAMPLE`, `VIS_2D_CBAR_MIN/MAX/RESET`
   - 3D Vis: `VIS_3D_DATA_KEY`, `VIS_3D_SUBDOMAIN`, `VIS_3D_TIMESTEP`, `VIS_3D_DOWNSAMPLE`
 - All legacy pages previously shared `X_VAR_DROPDOWN`, `Y_VAR_DROPDOWN`, causing Dash callback collisions
 
@@ -230,7 +233,7 @@ The analysis dashboard underwent a complete refactoring to simplify complexity a
 - Monitor page added real-time polling via `dcc.Interval` (5s interval) for live simulation tracking
 
 **4. Performance improvements**
-- **Presimulation page**: Removed `PRESIM_GEOMETRY_STORE` which was base64-encoding and storing entire `.morphdrain.raw` files (up to 22 MB) in browser memory. Now reads geometry on-demand from disk when slider moves.
+- **Morphological Drainage page** (`morphological_drainage.py`, renamed from `presimulation.py`): Removed `PRESIM_GEOMETRY_STORE` which was base64-encoding and storing entire `.morphdrain.raw` files (up to 22 MB) in browser memory. Now reads geometry on-demand from disk when slider moves.
 - **3D Visualization page**: Added startup error handling to prevent crashes when no `vis*` directories exist; shows graceful empty state instead.
 
 **5. Removed dead code**
@@ -275,6 +278,36 @@ def update_chart(x_col, records):
     df = pd.DataFrame(records)
     return px.line(df, y=x_col)
 ```
+
+### Export Script Feature (March 2026)
+**All analysis pages** (Monitor, Subphase, SCAL, Presimulation, 2D Visualization, 3D Visualization) now include an "Export Script" button that generates standalone Python scripts for reproducing plots locally.
+
+**Key implementation details:**
+- Export buttons open a modal where users can rename the script before downloading
+- `dcc.Download` sends the script to the browser; save location is user-defined
+- Script generation is handled by `pyLBPM/dashboard/script_export.py` with specialized functions for each page type
+- All scripts include proper imports, path handling, and plotting logic matching the dashboard's behavior
+
+**Important notes on generated scripts:**
+1. **Synthetic `sim.step` column**: Monitor, Subphase, and SCAL pages add a synthetic step column to CSVs in the dashboard. Generated scripts include the same logic:
+   ```python
+   df["sim.step"] = range(len(df))  # synthetic column added by dashboard
+   ```
+   Without this line, scripts that plot vs. `sim.step` will fail locally.
+
+2. **Plotly `.show()` behavior**: When running generated scripts with `fig.show()`, if the environment is non-interactive (e.g., terminal without browser), Plotly may print JSON output instead of opening a browser. Generated scripts include a comment with an alternative:
+   ```python
+   fig.show()
+   # To save as HTML instead: fig.write_html("output.html")
+   ```
+   Use `fig.write_html()` for non-interactive environments.
+
+3. **2D/3D Visualization scripts** conditionally load data:
+   - **Phase configurations**: Use `dataloader.raw_reader()` with domain dims from `input.db`
+   - **HDF5 visualization files**: Use `dataloader.h5_reader()` with subdomain support
+   - Both paths apply downsampling before slicing for efficiency
+
+4. **3D scripts use PyVista**: Phase configs render as isosurfaces (solid/NWP boundary at 0.5, NWP/WP at 1.5); HDF5 data uses volume rendering with sigmoid opacity.
 
 ---
 

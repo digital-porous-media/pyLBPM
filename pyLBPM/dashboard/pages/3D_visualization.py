@@ -15,10 +15,10 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc, callback, Input, Output, State
 import plotly.express as px
 
-from pyLBPM.dashboard import ids, dataloader, plotter
+from pyLBPM.dashboard import ids, dataloader, plotter, script_export
 from pyLBPM.filesystem import get_filesystem
 
-dash.register_page(__name__, name="3D Visualization", order=5)
+dash.register_page(__name__, name="3D Visualization", order=6)
 
 # Initialize disk cache for array caching
 cache = diskcache.Cache("./.dash_cache/vis3d")
@@ -51,7 +51,8 @@ layout = dbc.Container(
     children=[
         dcc.Location(id="vis3d-location", refresh=False),
         dcc.Store(id=ids.VIS_3D_FILE_STORE),
-        dcc.Interval(id=ids.VIS_3D_REFRESH_INTERVAL, interval=60_000, disabled=False),
+        dcc.Store(id=ids.VIS_3D_RENDER_PARAMS_STORE, storage_type="session"),
+        dcc.Interval(id=ids.VIS_3D_REFRESH_INTERVAL, interval=60_000, disabled=True),
 
         # Header row with title and Scan button
         dbc.Row([
@@ -105,8 +106,20 @@ layout = dbc.Container(
                     color="primary",
                     className="w-100",
                 ),
-            ], xs=3),
+            ], xs=2),
         ], className="mb-2", align="end"),
+
+        # Export button on its own row
+        dbc.Row([
+            dbc.Col([
+                dbc.Button(
+                    "Export Visualization Script",
+                    id=ids.VIS_3D_EXPORT_BTN,
+                    color="outline-primary",
+                    size="sm",
+                ),
+            ], xs=3),
+        ], className="mb-3"),
 
         # Timestep slider
         dbc.Row([
@@ -124,17 +137,32 @@ layout = dbc.Container(
             ], xs=12),
         ], className="mb-3"),
 
-        # VTK rendering area
+        # VTK rendering area (key forces remount to clear broken JS state)
         dcc.Loading(
             children=[
                 html.Div(
                     id=ids.VTK_3D_VIS,
                     style={"width": "100%", "height": "600px"},
+                    key="vtk-container",
                 ),
             ],
             type="circle",
             color="#0d6efd",
         ),
+
+        # Download component and modal for export
+        dcc.Download(id=ids.VIS_3D_DOWNLOAD),
+        dbc.Modal([
+            dbc.ModalHeader("Export 3D Visualization Script"),
+            dbc.ModalBody([
+                dbc.Label("Filename:"),
+                dbc.Input(id=ids.VIS_3D_EXPORT_FILENAME, value="3d_visualization.py", type="text"),
+            ]),
+            dbc.ModalFooter([
+                dbc.Button("Save", id=ids.VIS_3D_EXPORT_CONFIRM, color="primary"),
+                dbc.Button("Cancel", id=ids.VIS_3D_EXPORT_CANCEL, color="secondary"),
+            ]),
+        ], id=ids.VIS_3D_EXPORT_MODAL),
     ],
 )
 
@@ -303,26 +331,53 @@ def enforce_all_exclusive(selected_values, file_store_data):
 
 @callback(
     Output(ids.VTK_3D_VIS, "children"),
+    Output(ids.VIS_3D_RENDER_PARAMS_STORE, "data"),
     Input(ids.VIS_3D_RENDER_BTN, "n_clicks"),
+    Input("vis3d-location", "pathname"),
     State(ids.VIS_3D_DATA_KEY, "value"),
     State(ids.VIS_3D_SUBDOMAIN, "value"),
     State(ids.VIS_3D_TIMESTEP, "value"),
     State(ids.VIS_3D_DOWNSAMPLE, "value"),
     State(ids.VIS_3D_FILE_STORE, "data"),
     State(ids.APP_INPUT_FILE_PATH, "data"),
+    State(ids.VIS_3D_RENDER_PARAMS_STORE, "data"),
     prevent_initial_call=True,
 )
-def render_vis(n_clicks, data_key, subdomains, slider_step, downsample, file_store_data, stored_filename):
+def render_vis(n_clicks, _pathname, data_key, subdomains, slider_step, downsample,
+               file_store_data, stored_filename, render_params):
     """Render the 3D visualization based on current selections."""
-    if not file_store_data or n_clicks is None:
-        return html.Div("Click Render to display visualization")
+    triggered = dash.ctx.triggered_id
+
+    if triggered == "vis3d-location":
+        # Re-render using saved params from previous session if available
+        if not render_params:
+            raise dash.exceptions.PreventUpdate
+        data_key = render_params.get("data_key", data_key)
+        subdomains = render_params.get("subdomains", subdomains)
+        slider_step = render_params.get("slider_step", slider_step)
+        downsample = render_params.get("downsample", downsample)
+        file_store_data = render_params.get("file_store_data", file_store_data)
+        stored_filename = render_params.get("stored_filename", stored_filename)
+        params_update = dash.no_update
+    else:
+        # Button click — save params so page-return can re-render
+        if not file_store_data or n_clicks is None:
+            return html.Div("Click Render to display visualization"), dash.no_update
+        params_update = {
+            "data_key": data_key,
+            "subdomains": subdomains,
+            "slider_step": slider_step,
+            "downsample": downsample,
+            "file_store_data": file_store_data,
+            "stored_filename": stored_filename,
+        }
 
     input_filename = stored_filename or "input.db"
-    timesteps = file_store_data.get("timesteps", [])
-    has_raw = file_store_data.get("has_raw", False)
+    timesteps = file_store_data.get("timesteps", []) if file_store_data else []
+    has_raw = file_store_data.get("has_raw", False) if file_store_data else False
 
     if not timesteps or slider_step is None or slider_step >= len(timesteps):
-        return html.Div("No valid timestep selected")
+        return html.Div("No valid timestep selected"), dash.no_update
 
     sim_step = timesteps[slider_step]
 
@@ -330,11 +385,11 @@ def render_vis(n_clicks, data_key, subdomains, slider_step, downsample, file_sto
         # Handle "phase configurations" (raw files)
         if data_key == "phase configurations":
             if not has_raw:
-                return html.Div("No raw phase files found")
+                return html.Div("No raw phase files found"), dash.no_update
 
             try:
                 if not (sim_dir / input_filename).exists():
-                    return html.Div(f"Error: {input_filename} not found. Cannot determine domain dimensions for raw files.")
+                    return html.Div(f"Error: {input_filename} not found. Cannot determine domain dimensions for raw files."), dash.no_update
 
                 nx, ny, nz = dataloader.get_domain_dims(sim_dir, input_filename=input_filename)
 
@@ -354,15 +409,15 @@ def render_vis(n_clicks, data_key, subdomains, slider_step, downsample, file_sto
                 # Apply downsample
                 img = img[::downsample, ::downsample, ::downsample]
 
-                # Render two isosurfaces
                 view = plotter.render_phase_isosurfaces(img)
 
                 return html.Div(
+                    key=f"vtk-phase-{sim_step}-{downsample}",
                     style={"width": "100%", "height": "600px"},
                     children=[view],
-                )
+                ), params_update
             except Exception as e:
-                return html.Div(f"Error loading phase configurations: {str(e)}")
+                return html.Div(f"Error loading phase configurations: {str(e)}"), dash.no_update
 
         # HDF5 path
         else:
@@ -386,15 +441,63 @@ def render_vis(n_clicks, data_key, subdomains, slider_step, downsample, file_sto
                 # Apply downsample
                 img = img[::downsample, ::downsample, ::downsample]
 
-                # Render volume
                 view = plotter.render_volume(img)
 
                 return html.Div(
+                    key=f"vtk-h5-{data_key}-{sim_step}-{downsample}",
                     style={"width": "100%", "height": "600px"},
                     children=[view],
-                )
+                ), params_update
             except Exception as e:
-                return html.Div(f"Error loading HDF5 data: {str(e)}")
+                return html.Div(f"Error loading HDF5 data: {str(e)}"), dash.no_update
 
     except Exception as e:
-        return html.Div(f"Error rendering visualization: {str(e)}")
+        return html.Div(f"Error rendering visualization: {str(e)}"), dash.no_update
+
+
+@callback(
+    Output(ids.VIS_3D_EXPORT_MODAL, "is_open"),
+    Input(ids.VIS_3D_EXPORT_BTN, "n_clicks"),
+    Input(ids.VIS_3D_EXPORT_CONFIRM, "n_clicks"),
+    Input(ids.VIS_3D_EXPORT_CANCEL, "n_clicks"),
+    State(ids.VIS_3D_EXPORT_MODAL, "is_open"),
+    prevent_initial_call=True,
+)
+def toggle_export_modal(export_clicks, confirm_clicks, cancel_clicks, is_open):
+    """Toggle export modal visibility."""
+    if export_clicks or cancel_clicks:
+        return not is_open
+    return is_open
+
+
+@callback(
+    Output(ids.VIS_3D_DOWNLOAD, "data"),
+    Input(ids.VIS_3D_EXPORT_CONFIRM, "n_clicks"),
+    State(ids.VIS_3D_DATA_KEY, "value"),
+    State(ids.VIS_3D_TIMESTEP, "value"),
+    State(ids.VIS_3D_SUBDOMAIN, "value"),
+    State(ids.VIS_3D_DOWNSAMPLE, "value"),
+    State(ids.VIS_3D_FILE_STORE, "data"),
+    State(ids.APP_INPUT_FILE_PATH, "data"),
+    State(ids.VIS_3D_EXPORT_FILENAME, "value"),
+    prevent_initial_call=True,
+)
+def generate_script(n_clicks, data_key, slider_step, subdomains, downsample, file_store_data,
+                    stored_filename, filename):
+    """Generate and download the 3D visualization script."""
+    if not n_clicks or not data_key or not filename:
+        return None
+
+    input_filename = stored_filename or "input.db"
+    timesteps = file_store_data.get("timesteps", []) if file_store_data else []
+
+    if not timesteps or slider_step is None or slider_step >= len(timesteps):
+        return None
+
+    timestep = timesteps[slider_step]
+    subdomain_list = subdomains if isinstance(subdomains, list) else [subdomains]
+
+    script_content = script_export.vis_3d_script(str(sim_dir), data_key, timestep, subdomain_list,
+                                                 downsample or 1, input_filename)
+
+    return dict(content=script_content, filename=filename)
